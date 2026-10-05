@@ -1,0 +1,10 @@
+# not part of the public site (the API lives on Neon, see backend/)
+.git
+.claude
+backend
+node_modules
+wrangler.jsonc
+skills-lock.json
+.gitignore
+*.md
+*.tmp

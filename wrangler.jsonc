@@ -1,0 +1,12 @@
+// Cloudflare Workers (static assets only) — the site is plain HTML/CSS/JS, no build step.
+// Pushes to main on github.com/RinoM39/Rawand redeploy it (Workers Builds: `npx wrangler deploy`).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rawand",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": ".",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  }
+}
