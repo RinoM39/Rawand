@@ -1,11 +1,12 @@
-# secrets: the real admin email + password live only on the server
-api/config.php
-
-# content + runtime files written by api/index.php — never overwrite them from git
-data/*
-!data/.htaccess
-uploads/*
-!uploads/.htaccess
+# backend secrets + local Neon link (see backend/.gitignore)
+backend/node_modules/
+backend/.env
+backend/.env.*
+backend/.neon
 
 # local test leftovers
 *.tmp
+
+# agent skills (installed locally per machine)
+.claude/skills/
+skills-lock.json

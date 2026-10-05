@@ -4,7 +4,7 @@
    master plan). The set is pinned and slides sideways (phones too); each sheet drafts
    itself as it reaches the middle. Very short screens (landscape phones) get a plain list. Needs gsap + ScrollTrigger (already loaded for the hero).
    Without them, or with reduced motion, it stays a plain list with finished drawings.
-   Projects added on the dashboard (/auth → api/index.php) replace the sample sheets: a photo
+   Projects added on the dashboard (/auth → the Neon function in backend/) replace the sample sheets: a photo
    sheet whose cover is "developed" — wiped in by a pen line, burgundy print → full colour.
    Without the API (static hosting) or before the first project is published, the samples stay.
    ===================================================================== */
@@ -311,7 +311,8 @@
     start();
   };
   setTimeout(begin, 2500);
-  fetch('api/?action=projects', { cache: 'no-store' })
+  const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
+  (API ? fetch(API + '/projects', { cache: 'no-store' }) : Promise.reject(new Error('no API')))
     .then(r => (r.ok ? r.json() : null))
     .then(d => {
       const list = d && d.ok && Array.isArray(d.projects) ? d.projects.filter(p => p.images && p.images.length) : [];

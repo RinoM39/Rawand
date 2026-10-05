@@ -1,0 +1,5 @@
+# Cloudflare Pages response headers
+/auth/*
+  X-Robots-Tag: noindex, nofollow
+/backend/*
+  X-Robots-Tag: noindex, nofollow

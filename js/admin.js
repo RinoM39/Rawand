@@ -1,15 +1,18 @@
 /* =====================================================================
    RAWAND — admin dashboard (/auth)
-   - sign in with the one fixed account (api/config.php); the session lives in a cookie
+   - sign in with the one fixed account (ADMIN_EMAIL / ADMIN_PASSWORD on the Neon function);
+     the API hands back a token, kept in localStorage for 12 hours
    - list of projects: reorder (= order on the site), publish state, edit, preview, delete
    - editor: Arabic + English text, images (compressed in the browser, first = cover,
-     drag to reorder) and a video file uploaded in pieces with progress, or a YouTube/Vimeo link
-   Talks to ../api/ (api/index.php). Needs js/logo-data.js for the logo.
+     drag to reorder) and a video file sent straight to Neon storage with progress, or a YouTube/Vimeo link
+   Talks to the Neon function at window.RAWAND_API (js/config.js; source in backend/).
+   Needs js/logo-data.js for the logo.
    ===================================================================== */
 (() => {
   'use strict';
 
-  const API = '../api/';
+  const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
+  const TOKEN_KEY = 'rw-admin';
   const LOGO = window.RAWAND_LOGO;
   const NS = 'http://www.w3.org/2000/svg';
   const $ = (s, root = document) => root.querySelector(s);
@@ -21,23 +24,22 @@
   const clone = o => JSON.parse(JSON.stringify(o));
   const VIDEO_LINK = /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)\//i;
 
-  const S = { auth: false, email: '', csrf: '', chunk: 4 << 20, maxImage: 25 << 20, maxVideo: 800 << 20, projects: [], loaded: false };
+  const S = { auth: false, email: '', token: '', maxImage: 25 << 20, maxVideo: 1024 << 20, projects: [], loaded: false };
 
   const MSG = {
     bad_login: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
     too_many: 'محاولات كثيرة خاطئة. انتظر قليلاً ثم حاول من جديد.',
     unauthorized: 'انتهت الجلسة. سجّل الدخول من جديد.',
-    csrf: 'انتهت الجلسة. سجّل الدخول من جديد.',
     title_required: 'اكتب اسم المشروع بالعربي والإنجليزي.',
     cover_required: 'المشروع المنشور يحتاج صورة واحدة على الأقل لتكون الغلاف.',
     bad_video_url: 'رابط الفيديو يجب أن يكون من YouTube أو Vimeo ويبدأ بـ https://',
     too_big: 'الملف أكبر من الحد المسموح.',
     bad_type: 'صيغة الملف غير مدعومة.',
     not_found: 'المشروع غير موجود — ربما حُذف.',
-    storage: 'تعذّر الحفظ على الخادم. تأكّد من صلاحيات الكتابة لمجلدي data و uploads.',
+    not_configured: 'السيرفر لم يُضبط بعد: البريد وكلمة المرور غير موجودين في إعدادات Neon.',
     upload_failed: 'تعذّر رفع الملف.',
     network: 'تعذّر الاتصال بالخادم. تحقّق من الإنترنت وحاول مجدداً.',
-    no_php: 'هذا السيرفر لا يشغّل PHP، فلوحة التحكم لا تعمل عليه. افتح الموقع عبر سيرفر PHP.',
+    no_api: 'لم يُضبط عنوان الـ API بعد (js/config.js)، فلوحة التحكم لا تستطيع الاتصال به.',
     server: 'حدث خطأ في السيرفر. حاول بعد قليل.',
   };
   const message = e => MSG[e && e.code] || MSG.network;
@@ -132,24 +134,24 @@
   }
 
   async function api(action, opts = {}) {
-    const headers = { 'X-Rawand': '1' };
-    if (S.csrf) headers['X-CSRF'] = S.csrf;
+    if (!API) throw new ApiError('no_api');
+    const headers = {};
+    if (S.token) headers.Authorization = 'Bearer ' + S.token;
     if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+    const qs = opts.params ? '?' + new URLSearchParams(opts.params) : '';
     let res;
     try {
-      res = await fetch(API + '?' + new URLSearchParams({ action, ...(opts.params || {}) }), {
+      res = await fetch(`${API}/${action}${qs}`, {
         method: opts.body !== undefined ? 'POST' : 'GET',
         headers,
         body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
-        credentials: 'same-origin',
         cache: 'no-store',
       });
     } catch (e) {
       throw new ApiError('network');
     }
     let data = null;
-    // not JSON: a server that doesn't run PHP (it sends the file, a folder listing or "501"), or PHP crashed
-    try { data = await res.json(); } catch (e) { throw new ApiError(res.status >= 500 && res.status !== 501 ? 'server' : 'no_php', res.status); }
+    try { data = await res.json(); } catch (e) { throw new ApiError(res.status >= 500 ? 'server' : 'no_api', res.status); }
     if (!res.ok || !data.ok) throw new ApiError(data.error || 'network', res.status, data);
     return data;
   }
@@ -164,17 +166,31 @@
     try {
       return await api(action, opts);
     } catch (e) {
-      if (e.code !== 'unauthorized' && e.code !== 'csrf') throw e;
+      if (e.code !== 'unauthorized') throw e;
       await needLogin();
       return api(action, opts);
     }
   }
 
+  function saveToken(token, exp) {
+    S.token = token || '';
+    try {
+      if (token) localStorage.setItem(TOKEN_KEY, JSON.stringify({ token, exp }));
+      else localStorage.removeItem(TOKEN_KEY);
+    } catch (e) { /* private mode: signed in for this page only */ }
+  }
+  function loadToken() {
+    try {
+      const t = JSON.parse(localStorage.getItem(TOKEN_KEY) || 'null');
+      if (t && t.token && t.exp > Date.now()) return t.token;
+    } catch (e) { /* nothing stored */ }
+    return '';
+  }
+
   function applySession(s) {
     S.auth = true;
     S.email = s.email || '';
-    S.csrf = s.csrf || '';
-    S.chunk = s.chunk || S.chunk;
+    if (s.token) saveToken(s.token, s.exp);
     S.maxImage = s.maxImage || S.maxImage;
     S.maxVideo = s.maxVideo || S.maxVideo;
     $('#deskUser').textContent = S.email;
@@ -182,60 +198,53 @@
     $('#vidHint').textContent = `MP4 · MOV · WEBM — حتى ${size(S.maxVideo)}. الأفضل MP4 ليعمل على كل الأجهزة.`;
   }
 
-  /* ------------------------------------------------------------ uploads: one file, in pieces */
+  /* ------------------------------------------------------------ uploads: straight to Neon storage */
 
-  function send(fd, onFraction, signal) {
+  // PUT the file to the signed URL the API gave us, with progress
+  function put(url, headers, file, onProgress, signal) {
     return new Promise((resolve, reject) => {
       const x = new XMLHttpRequest();
-      x.open('POST', API + '?action=upload');
-      x.setRequestHeader('X-Rawand', '1');
-      x.setRequestHeader('X-CSRF', S.csrf);
-      x.responseType = 'json';
-      x.upload.onprogress = e => { if (e.lengthComputable) onFraction(e.loaded / e.total); };
-      x.onload = () => {
-        const d = x.response;
-        if (x.status >= 200 && x.status < 300 && d && d.ok) resolve(d);
-        else reject(new ApiError(d && d.error ? d.error : (d ? 'network' : 'no_php'), x.status, d));
-      };
+      x.open('PUT', url);
+      for (const [k, v] of Object.entries(headers || {})) x.setRequestHeader(k, v);
+      x.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+      x.onload = () => (x.status >= 200 && x.status < 300 ? resolve() : reject(new ApiError(x.status >= 500 ? 'network' : 'upload_failed', x.status)));
       x.onerror = () => reject(new ApiError('network'));
       x.onabort = () => reject(new ApiError('aborted'));
       if (signal) {
         if (signal.aborted) return reject(new ApiError('aborted'));
         signal.addEventListener('abort', () => x.abort(), { once: true });
       }
-      x.send(fd);
+      x.send(file);
     });
   }
 
+  const TYPES = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', avif: 'image/avif', mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm', heic: 'image/heic', heif: 'image/heif' };
+  const typeOf = file => file.type || TYPES[(file.name.split('.').pop() || '').toLowerCase()] || '';
+
+  // 1) ask the API for a signed URL  2) PUT the file  3) the API checks what actually arrived
   async function upload(file, kind, onProgress, signal) {
-    const id = uid(24);
-    let offset = 0;
-    let tries = 0;
-    for (;;) {
-      if (signal && signal.aborted) throw new ApiError('aborted');
-      const piece = file.slice(offset, offset + S.chunk);
-      const fd = new FormData();
-      fd.append('uploadId', id);
-      fd.append('kind', kind);
-      fd.append('offset', String(offset));
-      fd.append('size', String(file.size));
-      fd.append('chunk', piece, 'chunk');
-      let res;
+    const ticket = await call('upload', { body: { kind, type: typeOf(file), size: file.size } });
+    for (let tries = 0; ; tries++) {
       try {
-        const start = offset;
-        res = await send(fd, f => onProgress(Math.min(1, (start + f * piece.size) / file.size)), signal);
+        await put(ticket.url, ticket.headers, file, onProgress, signal);
+        break;
       } catch (e) {
-        if (e.code === 'unauthorized' || e.code === 'csrf') { await needLogin(); continue; }
-        if (e.code === 'out_of_order' && typeof e.data.have === 'number') { offset = e.data.have; continue; }
-        // a proxy in front of PHP refused the piece as too large: send smaller pieces
-        if (e.status === 413 && e.code !== 'too_big' && S.chunk > 256 * 1024) { S.chunk = Math.floor(S.chunk / 2); continue; }
-        if ((e.code === 'network' || e.status >= 500) && ++tries <= 4) { await wait(800 * tries); continue; }
-        throw e;
+        if (e.code !== 'network' || tries >= 3) throw e;
+        await wait(1000 * (tries + 1));
       }
-      tries = 0;
-      if (res.done) return res;
-      offset = res.received;
     }
+    if (signal && signal.aborted) throw new ApiError('aborted');
+    return call('upload/check', { body: { key: ticket.key, kind } });
+  }
+
+  // width x height, for the page layout (read from the browser's own decode)
+  function imageSize(src) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve({ w: 0, h: 0 });
+      img.src = src;
+    });
   }
 
   // big photos are scaled to 2560px and re-encoded (WebP) in the browser before upload
@@ -390,10 +399,9 @@
       const ok = await confirmBox('الخروج بدون حفظ؟', 'لديك تغييرات لم تُحفظ بعد في هذا المشروع.', 'خروج');
       if (!ok) return;
     }
-    try { await api('logout', { body: {} }); } catch (e) { /* the session may already be gone */ }
     closeEditor();
     S.auth = false;
-    S.csrf = '';
+    saveToken('');
     S.loaded = false;
     history.replaceState(null, '', location.pathname);
     currentHash = '';
@@ -471,7 +479,7 @@
       const open = e => { if (!e.target.closest('button, a')) location.hash = '#/edit/' + encodeURIComponent(p.id); };
       return h('li', { class: 'pitem', dataset: { id: p.id }, onclick: open },
         h('span', { class: 'pitem-num' }, pad2(i + 1)),
-        h('span', { class: 'pitem-thumb' }, cover ? h('img', { src: '../' + cover.src, alt: '', loading: 'lazy' }) : null),
+        h('span', { class: 'pitem-thumb' }, cover ? h('img', { src: cover.src, alt: '', loading: 'lazy' }) : null),
         h('div', { class: 'pitem-main' },
           h('h2', { class: 'pitem-title' }, p.title.ar || '—', h('span', { class: 'pitem-en', lang: 'en', dir: 'ltr' }, p.title.en)),
           h('p', { class: 'pitem-meta' }, meta)),
@@ -686,7 +694,8 @@
         const bar = t.el && $('.bar i', t.el);
         if (bar) bar.style.setProperty('--p', p);
       }, t.ctrl.signal);
-      Object.assign(t, { src: res.src, w: res.w, h: res.h, status: 'done', ctrl: null });
+      const { w, h } = await imageSize(t.preview);
+      Object.assign(t, { src: res.src, w, h, status: 'done', ctrl: null });
     } catch (e) {
       if (e.code === 'aborted') return;
       t.status = 'error';
@@ -705,7 +714,7 @@
       draggable: 'true',
       dataset: { key: t.key },
     },
-      h('img', { src: t.preview || '../' + t.src, alt: '', draggable: 'false' }),
+      h('img', { src: t.preview || t.src, alt: '', draggable: 'false' }),
       i === 0 ? h('span', { class: 'tile-badge' }, 'الغلاف') : h('span', { class: 'tile-num' }, arabic(i + 1)),
       t.status === 'error' ? h('div', { class: 'tile-msg' }, t.error,
         t.file ? h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => uploadTile(t) }, 'إعادة المحاولة') : null) : null,
@@ -832,7 +841,7 @@
     $('#vidCard .vid-retry')?.remove();
     if (!v) { $('#vidPlayer').removeAttribute('src'); return; }
     const player = $('#vidPlayer');
-    const src = v.preview || '../' + v.src;
+    const src = v.preview || v.src;
     if (player.getAttribute('src') !== src) player.src = src;
     $('#vidName').textContent = v.name || '';
     $('#vidBar').hidden = v.status !== 'uploading';
@@ -928,7 +937,7 @@
       id: E.id,
       videoUrl: link,
       images,
-      video: E.video && E.video.status === 'done' ? { src: E.video.src } : null,
+      video: E.video && E.video.status === 'done' ? { src: E.video.src, size: E.video.size || 0 } : null,
     });
     E.saving = true;
     $('#saveBtn').classList.add('is-busy');
@@ -972,12 +981,20 @@
 
   async function boot() {
     buildGateMark($('#gateMark'));
-    try {
-      const s = await api('session');
-      if (s.auth) { applySession(s); enterDesk(); } else showGate();
-    } catch (e) {
+    S.token = loadToken();
+    if (!API) {
       showGate();
-      loginErr.textContent = message(e);
+      loginErr.textContent = MSG.no_api;
+    } else if (!S.token) {
+      showGate();
+    } else {
+      try {
+        const s = await api('session');
+        if (s.auth) { applySession(s); enterDesk(); } else { saveToken(''); showGate(); }
+      } catch (e) {
+        showGate();
+        loginErr.textContent = message(e);
+      }
     }
     document.body.classList.remove('is-booting');
   }

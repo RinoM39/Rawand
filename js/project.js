@@ -1,6 +1,6 @@
 /* =====================================================================
    RAWAND — one project (project.html?id=…)
-   Reads the project from api/?action=project and fills the sheet: title block, cover,
+   Reads the project from the API (window.RAWAND_API → /project) and fills the sheet: title block, cover,
    Arabic + English text (the page's language first, the other as the accent), the film (uploaded file, or a YouTube/Vimeo link that only loads
    on click), the photographs and a photo viewer. Photos are "developed" like the home-page
    sheets: a pen line wipes them in, then the burgundy print turns to colour.
@@ -36,7 +36,14 @@
   }
 
   const id = new URLSearchParams(location.search).get('id') || '';
-  fetch('api/?action=project&id=' + encodeURIComponent(id), { cache: 'no-store', credentials: 'same-origin' })
+  // signed in on /auth (same browser)? then drafts can be previewed too
+  const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
+  const headers = {};
+  try {
+    const t = JSON.parse(localStorage.getItem('rw-admin') || 'null');
+    if (t && t.token && t.exp > Date.now()) headers.Authorization = 'Bearer ' + t.token;
+  } catch (e) { /* no token */ }
+  (API ? fetch(API + '/project?id=' + encodeURIComponent(id), { cache: 'no-store', headers }) : Promise.reject(new Error('no API')))
     .then(r => r.json().then(d => (r.ok && d.ok ? d : Promise.reject(d))))
     .then(render)
     .catch(missing);
