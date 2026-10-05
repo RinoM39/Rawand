@@ -1,0 +1,199 @@
+/* =====================================================================
+   RAWAND — About (من نحن) · sheet A-02
+   Same drawing-sheet language as the hero: paper grid, hairlines, annotations.
+   Uses the tokens + .sheet-head defined in hero.css.
+   ===================================================================== */
+
+.about {
+  position: relative;
+  padding: clamp(96px, 16svh, 180px) var(--sp) clamp(96px, 16svh, 180px);
+  background: var(--rw-paper);
+  overflow: hidden;
+  isolation: isolate;
+}
+.about-paper {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(216, 209, 201, .5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(216, 209, 201, .5) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
+  -webkit-mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+          mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+}
+.about-wrap { max-width: 1320px; margin-inline: auto; }
+
+/* ------------------------------------------------ statement + figure */
+.about-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  column-gap: clamp(40px, 7vw, 120px);
+  row-gap: 48px;
+  align-items: center;
+}
+.about-statement {
+  margin: 0;
+  font: 700 clamp(1.55rem, 2.8vw, 2.9rem)/1.7 var(--font-ar);
+  color: var(--rw-900);
+}
+.about-statement em { font-style: normal; color: var(--rw-700); }
+
+.about-figure {
+  position: relative;
+  justify-self: end;
+  width: min(100%, 400px);
+  margin: 0;
+}
+.about-mark {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--rw-900);
+}
+.about-mark .mk {
+  stroke-width: .38;
+  stroke-linejoin: round;
+}
+/* the whole mark as a light construction outline … */
+.about-mark .mk-soft { fill: none; stroke: var(--rw-taupe); opacity: .75; }
+/* … and the parts that grow in the logo's burgundy (js/about.js) */
+.about-mark .mk-ink { fill: currentColor; }
+.about-mark .guide {
+  stroke: var(--rw-500);
+  stroke-width: .3;
+  stroke-dasharray: 1.6 1.6;
+  opacity: .55;
+}
+/* ------------------------------------------------ vision / mission */
+.about-pillars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(40px, 7vw, 120px);
+  margin-top: clamp(80px, 14svh, 150px);
+}
+/* headings drawn as dimension lines:  /——— label ———/  */
+.dim {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  font: 700 clamp(18px, 1.5vw, 21px)/1 var(--font-ar);
+  color: var(--rw-900);
+}
+.dim::before,
+.dim::after {
+  content: '';
+  flex: none;
+  width: 12px;
+  height: 1px;
+  background: var(--rw-500);
+  transform: rotate(-45deg);
+}
+.dim-line { flex: 1; height: 1px; background: rgba(158, 74, 82, .55); }
+.dim-line:first-of-type { transform-origin: left center; }
+.dim-line:last-of-type { transform-origin: right center; }
+.dim-label { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.dim small, .values-title small {
+  font: 500 10px/1 var(--font-en);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--rw-500);
+}
+.pillar p {
+  max-width: 540px;
+  margin: 26px auto 0;
+  font: 400 clamp(16px, 1.3vw, 19px)/1.95 var(--font-ar);
+  text-align: center;
+  color: var(--rw-ink-soft);
+}
+
+/* ------------------------------------------------ values on a structural grid */
+.about-values { margin-top: clamp(96px, 16svh, 170px); }
+.values-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 48px;
+  font: 800 clamp(1.3rem, 1.8vw, 1.7rem)/1 var(--font-ar);
+  color: var(--rw-900);
+}
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.value {
+  position: relative;
+  padding: 58px clamp(18px, 2.2vw, 34px) 44px;
+  isolation: isolate;
+}
+.value-top,
+.value-rule {
+  position: absolute;
+  background: rgba(158, 74, 82, .5);
+}
+.value-top { top: 0; left: 0; right: 0; height: 1px; transform-origin: right center; }
+.value-rule { top: 0; bottom: 0; right: 0; width: 1px; transform-origin: center top; }
+.value-rule.is-end { right: auto; left: 0; }
+/* section hatch (poché) on hover */
+.value::after {
+  content: '';
+  position: absolute;
+  inset: 1px 1px 0 0;
+  z-index: -1;
+  background: repeating-linear-gradient(-45deg, rgba(158, 74, 82, .17) 0 1px, transparent 1px 9px);
+  opacity: 0;
+  transition: opacity .5s var(--ease-out);
+}
+@media (hover: hover) {
+  .value:hover::after { opacity: 1; }
+  .value:hover .value-axis { background: var(--rw-700); border-color: var(--rw-700); color: var(--rw-paper); }
+}
+.value-axis {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--rw-500);
+  border-radius: 50%;
+  background: var(--rw-paper);
+  font: 700 14px/1 var(--font-ar);
+  color: var(--rw-900);
+  transition: background-color .4s var(--ease-out), color .4s var(--ease-out), border-color .4s var(--ease-out);
+}
+.value h4 { margin: 0; font: 700 clamp(18px, 1.5vw, 22px)/1.3 var(--font-ar); color: var(--rw-900); }
+.value-en {
+  margin: 8px 0 18px;
+  font: 500 10px/1 var(--font-en);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--rw-500);
+}
+.value-text { margin: 0; font: 400 15px/1.85 var(--font-ar); color: var(--rw-ink-soft); }
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 900px) {
+  .about-intro { grid-template-columns: 1fr; }
+  .about-figure { justify-self: center; width: min(78%, 340px); }
+  .about-pillars { grid-template-columns: 1fr; gap: 64px; }
+  .values-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+}
+
+@media (max-width: 560px) {
+  .value { padding: 46px 16px 30px; }
+  .value-text { font-size: 14px; }
+}
+
+@media (max-width: 340px) {
+  .values-grid { grid-template-columns: 1fr; }
+}

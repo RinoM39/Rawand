@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>لوحة التحكم | روند RAWAND</title>
+  <meta name="theme-color" content="#F5F3F0">
+  <link rel="icon" type="image/svg+xml" href="../assets/logo/rawand-mark.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=Montserrat:wght@300;400;500;600&display=swap">
+  <link rel="stylesheet" href="../css/hero.css?v=4">
+  <link rel="stylesheet" href="../css/admin.css?v=1">
+</head>
+<body class="admin is-booting">
+
+  <!-- ================= SIGN IN (one fixed account — no sign-up) ================= -->
+  <main class="gate" id="gate" hidden>
+    <div class="gate-paper" aria-hidden="true"></div>
+    <form class="gate-sheet" id="loginForm" novalidate>
+      <header class="gate-head">
+        <svg class="gate-mark" id="gateMark" aria-hidden="true"></svg>
+        <div>
+          <h1 class="gate-title">لوحة التحكم</h1>
+          <p class="gate-sub">للفريق فقط. سجّل الدخول لإدارة المشاريع.</p>
+        </div>
+      </header>
+
+      <div class="field">
+        <label for="loginEmail">البريد الإلكتروني <small lang="en">Email</small></label>
+        <input id="loginEmail" name="email" type="email" dir="ltr" autocomplete="username" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label for="loginPass">كلمة المرور <small lang="en">Password</small></label>
+        <input id="loginPass" name="password" type="password" dir="ltr" autocomplete="current-password" required>
+        <button class="pw-eye" id="pwEye" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="pw-slash" d="M4 4l16 16"/></svg>
+        </button>
+      </div>
+
+      <p class="gate-error" id="loginError" role="alert"></p>
+
+      <button class="btn btn-primary gate-go" id="loginBtn" type="submit">
+        دخول
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+
+      <footer class="gate-foot" lang="en" dir="ltr"><span>A-00 · Admin</span><span>RAWAND</span></footer>
+    </form>
+  </main>
+
+  <!-- ================= DASHBOARD ================= -->
+  <div class="desk" id="desk" hidden>
+    <header class="desk-bar">
+      <a class="desk-brand" href="../index.html" target="_blank" rel="noopener" aria-label="روند — فتح الموقع">
+        <svg class="desk-logo" id="deskLogo" aria-hidden="true"></svg>
+      </a>
+      <span class="desk-tag">لوحة التحكم <small lang="en">Admin</small></span>
+      <div class="desk-actions">
+        <a class="desk-link" href="../index.html#projects" target="_blank" rel="noopener">
+          عرض الموقع
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5h8v8M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        </a>
+        <span class="desk-user" id="deskUser" dir="ltr"></span>
+        <button class="btn btn-ghost btn-sm" id="logoutBtn" type="button">خروج</button>
+      </div>
+    </header>
+
+    <!-- ---------- the project list ---------- -->
+    <section class="view" id="listView" aria-labelledby="listTitle" hidden>
+      <header class="view-head">
+        <h1 class="view-title" id="listTitle">المشاريع <small lang="en">Projects</small></h1>
+        <span class="view-count" id="listCount"></span>
+        <i class="view-rule" aria-hidden="true"></i>
+        <a class="btn btn-primary" href="#/new">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          مشروع جديد
+        </a>
+      </header>
+      <p class="view-note">ترتيب القائمة هنا هو ترتيب المشاريع في الموقع. المسودّات لا تظهر للزوّار.</p>
+
+      <ol class="plist" id="plist"></ol>
+
+      <div class="pempty" id="pempty" hidden>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="18"/><path d="M32 4v56M4 32h56"/></svg>
+        <p class="pempty-title">لا توجد مشاريع بعد.</p>
+        <p class="pempty-text">أضف أول مشروع: الاسم بالعربي والإنجليزي، الوصف، الصور والفيديو. ما دام لا يوجد مشروع منشور، يعرض الموقع المشاريع التجريبية.</p>
+        <a class="btn btn-primary" href="#/new">أضف أول مشروع</a>
+      </div>
+    </section>
+
+    <!-- ---------- add / edit a project ---------- -->
+    <form class="view editor" id="editor" novalidate hidden>
+      <header class="view-head editor-head">
+        <a class="back" href="#/">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          المشاريع
+        </a>
+        <h1 class="view-title" id="editorTitle">مشروع جديد</h1>
+        <i class="view-rule" aria-hidden="true"></i>
+        <label class="switch">
+          <input type="checkbox" data-f="published">
+          <span class="switch-ui" aria-hidden="true"></span>
+          <span class="switch-text"><b class="on">منشور</b><b class="off">مسودّة</b></span>
+        </label>
+      </header>
+
+      <!-- 01 · basics -->
+      <fieldset class="ed-sheet">
+        <legend class="ed-legend"><span class="ed-num">٠١</span>المعلومات الأساسية <small lang="en">Basics</small></legend>
+
+        <div class="frow">
+          <p class="frow-label">اسم المشروع <small lang="en">Project name</small> <em class="req" aria-hidden="true">*</em></p>
+          <div class="pair">
+            <div class="field"><label class="lang-tag" for="fTitleAr">العربية</label><input id="fTitleAr" data-f="title.ar" maxlength="140" placeholder="مثال: فيلا الياسمين" required></div>
+            <div class="field" lang="en"><label class="lang-tag" for="fTitleEn">English</label><input id="fTitleEn" data-f="title.en" dir="ltr" maxlength="140" placeholder="e.g. Al-Yasmin Villa" required></div>
+          </div>
+        </div>
+
+        <div class="frow">
+          <p class="frow-label">التصنيف <small lang="en">Category</small></p>
+          <div class="chips" id="catChips" role="group" aria-label="تصنيفات جاهزة"></div>
+          <div class="pair">
+            <div class="field"><label class="lang-tag" for="fCatAr">العربية</label><input id="fCatAr" data-f="category.ar" maxlength="60" placeholder="سكني"></div>
+            <div class="field" lang="en"><label class="lang-tag" for="fCatEn">English</label><input id="fCatEn" data-f="category.en" dir="ltr" maxlength="60" placeholder="Residential"></div>
+          </div>
+        </div>
+
+        <div class="frow">
+          <p class="frow-label">الموقع <small lang="en">Location</small></p>
+          <div class="pair">
+            <div class="field"><label class="lang-tag" for="fLocAr">العربية</label><input id="fLocAr" data-f="location.ar" maxlength="120" placeholder="الرياض — حي الياسمين"></div>
+            <div class="field" lang="en"><label class="lang-tag" for="fLocEn">English</label><input id="fLocEn" data-f="location.en" dir="ltr" maxlength="120" placeholder="Riyadh — Al-Yasmin"></div>
+          </div>
+        </div>
+
+        <div class="frow frow-facts">
+          <div class="field">
+            <label for="fYear">السنة <small lang="en">Year</small></label>
+            <input id="fYear" data-f="year" dir="ltr" inputmode="numeric" maxlength="9" placeholder="2025">
+          </div>
+          <div class="field field-area">
+            <label for="fArea">المساحة <small lang="en">Area</small></label>
+            <input id="fArea" data-f="area" dir="ltr" inputmode="decimal" maxlength="16" placeholder="650">
+            <select data-f="areaUnit" aria-label="وحدة المساحة">
+              <option value="m2">م²</option>
+              <option value="ha">هكتار</option>
+            </select>
+          </div>
+          <div class="scope">
+            <p class="frow-label">نطاق عملنا <small lang="en">Our scope</small></p>
+            <div class="phases">
+              <label class="phase"><input type="checkbox" data-f="scope.consult"><span>استشارة</span></label>
+              <label class="phase"><input type="checkbox" data-f="scope.design"><span>تصميم</span></label>
+              <label class="phase"><input type="checkbox" data-f="scope.build"><span>تنفيذ</span></label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 02 · description -->
+      <fieldset class="ed-sheet">
+        <legend class="ed-legend"><span class="ed-num">٠٢</span>الوصف <small lang="en">Description</small></legend>
+
+        <div class="frow">
+          <p class="frow-label">نبذة قصيرة <small lang="en">Short summary</small> <span class="hint">تظهر على بطاقة المشروع في الصفحة الرئيسية — سطر أو سطران.</span></p>
+          <div class="pair">
+            <div class="field"><label class="lang-tag" for="fSumAr">العربية</label><textarea id="fSumAr" data-f="summary.ar" rows="3" maxlength="360" placeholder="فيلا عائلية بطابقين تستلهم العمارة النجدية…"></textarea><span class="count" data-count="summary.ar"></span></div>
+            <div class="field" lang="en"><label class="lang-tag" for="fSumEn">English</label><textarea id="fSumEn" data-f="summary.en" dir="ltr" rows="3" maxlength="360" placeholder="A two-storey family villa inspired by Najdi architecture…"></textarea><span class="count" data-count="summary.en"></span></div>
+          </div>
+        </div>
+
+        <div class="frow">
+          <p class="frow-label">شرح المشروع <small lang="en">Full description</small> <span class="hint">يظهر في صفحة المشروع. اترك سطراً فارغاً بين الفقرات.</span></p>
+          <div class="pair">
+            <div class="field"><label class="lang-tag" for="fDescAr">العربية</label><textarea id="fDescAr" data-f="description.ar" rows="9" maxlength="12000" placeholder="الفكرة، الموقع، التحدّي، الحل…"></textarea></div>
+            <div class="field" lang="en"><label class="lang-tag" for="fDescEn">English</label><textarea id="fDescEn" data-f="description.en" dir="ltr" rows="9" maxlength="12000" placeholder="The idea, the site, the challenge, the answer…"></textarea></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 03 · images -->
+      <fieldset class="ed-sheet">
+        <legend class="ed-legend"><span class="ed-num">٠٣</span>الصور <small lang="en">Images</small></legend>
+        <p class="ed-note">الصورة الأولى هي <b>الغلاف</b> الذي يظهر في الصفحة الرئيسية. اسحب الصور لترتيبها، أو استعمل الأسهم.</p>
+
+        <div class="drop" id="imgDrop">
+          <input class="sr-only" id="imgInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic" multiple>
+          <svg class="drop-icon" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28"/><path d="m6 32 10-10 9 9 6-6 11 11"/><circle cx="32" cy="19" r="3"/></svg>
+          <p class="drop-text">اسحب الصور إلى هنا، أو <label for="imgInput" class="drop-pick">اخترها من جهازك</label></p>
+          <p class="drop-hint" id="imgHint"></p>
+        </div>
+        <ol class="tiles" id="tiles"></ol>
+      </fieldset>
+
+      <!-- 04 · video -->
+      <fieldset class="ed-sheet">
+        <legend class="ed-legend"><span class="ed-num">٠٤</span>الفيديو <small lang="en">Video</small> <span class="optional">اختياري</span></legend>
+
+        <div class="drop drop-video" id="vidDrop">
+          <input class="sr-only" id="vidInput" type="file" accept="video/mp4,video/webm,video/quicktime,.mov,.m4v">
+          <svg class="drop-icon" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="12" width="28" height="24"/><path d="m34 20 9-5v18l-9-5"/></svg>
+          <p class="drop-text">اسحب ملف الفيديو إلى هنا، أو <label for="vidInput" class="drop-pick">اختره من جهازك</label></p>
+          <p class="drop-hint" id="vidHint"></p>
+        </div>
+
+        <div class="vid" id="vidCard" hidden>
+          <video class="vid-player" id="vidPlayer" controls preload="metadata" playsinline></video>
+          <div class="vid-side">
+            <p class="vid-name" id="vidName" dir="ltr"></p>
+            <p class="vid-state" id="vidState"></p>
+            <span class="bar" id="vidBar" hidden><i></i></span>
+            <button class="btn btn-ghost btn-sm" id="vidRemove" type="button">إزالة الفيديو</button>
+          </div>
+        </div>
+
+        <div class="or" aria-hidden="true"><span>أو</span></div>
+
+        <div class="field">
+          <label for="fVideoUrl">رابط فيديو من YouTube أو Vimeo <small lang="en">Video link</small></label>
+          <input id="fVideoUrl" data-f="videoUrl" dir="ltr" type="url" maxlength="300" placeholder="https://www.youtube.com/watch?v=…">
+        </div>
+      </fieldset>
+
+      <!-- save bar -->
+      <div class="savebar">
+        <p class="savebar-state" id="saveState" aria-live="polite"></p>
+        <a class="btn btn-ghost" id="previewLink" href="#" target="_blank" rel="noopener" hidden>معاينة</a>
+        <button class="btn btn-ghost danger" id="deleteBtn" type="button" hidden>حذف</button>
+        <button class="btn btn-primary" id="saveBtn" type="submit">
+          حفظ المشروع
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10.5 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= confirm dialog ================= -->
+  <dialog class="dlg" id="dlg">
+    <form method="dialog" class="dlg-sheet">
+      <p class="dlg-title" id="dlgTitle"></p>
+      <p class="dlg-text" id="dlgText"></p>
+      <div class="dlg-actions">
+        <button class="btn btn-ghost" value="cancel">إلغاء</button>
+        <button class="btn btn-primary" value="ok" id="dlgOk"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+  <script src="../js/logo-data.js?v=4"></script>
+  <script src="../js/admin.js?v=2"></script>
+</body>
+</html>

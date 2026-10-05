@@ -1,0 +1,236 @@
+/* =====================================================================
+   RAWAND — Team page (الفريق) · sheet A-05
+   Three partners drawn as line portraits on three structural axes.
+   Default (no JS / reduced motion): a plain list with the toned portraits.
+   js/team.js adds .is-live: pinned canvas stage, camera walks from partner to partner.
+   Uses the tokens, nav, buttons, .sheet-head and the scroll hint from hero.css.
+   ===================================================================== */
+
+.nav-links a[aria-current="page"] { color: var(--rw-700); }
+.nav-links a[aria-current="page"]::after { transform: scaleX(1); }
+
+.team {
+  position: relative;
+  background: var(--rw-paper);
+}
+.team-stage {
+  position: relative;
+  padding: calc(var(--nav-h) + 32px) var(--sp) 72px;
+  overflow: hidden;
+  overflow: clip;
+  isolation: isolate;
+}
+.team-paper {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(216, 209, 201, .55) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(216, 209, 201, .55) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
+  -webkit-mask-image: radial-gradient(ellipse 80% 75% at 50% 50%, #000 30%, transparent 92%);
+          mask-image: radial-gradient(ellipse 80% 75% at 50% 50%, #000 30%, transparent 92%);
+}
+.team-canvas { display: none; }
+
+/* ------------------------------------------------------------ heading */
+.team-head { position: relative; z-index: 2; max-width: 1320px; margin-inline: auto; }
+.team-head .sheet-head { margin-bottom: 18px; }
+.team-titlebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 32px;
+}
+.team-title {
+  margin: 0;
+  font: 800 clamp(1.8rem, 3.2vw, 3rem)/1.2 var(--font-ar);
+  color: var(--rw-900);
+}
+.team-title span { color: var(--rw-700); }
+.team-title-en {
+  margin: 0;
+  font: 300 clamp(.95rem, 1.2vw, 1.15rem)/1.4 var(--font-en);
+  color: var(--rw-700);
+}
+.team-title-en em,
+.team-outro em {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.32em;
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------ the partners (list fallback) */
+.team-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(32px, 4vw, 64px);
+  max-width: 1320px;
+  margin: clamp(40px, 7svh, 72px) auto 0;
+  padding: 0;
+  list-style: none;
+}
+.member-img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: clamp(320px, 52svh, 520px);
+  margin: 0 auto 24px;
+  object-fit: contain;
+  -webkit-mask-image: linear-gradient(#000 74%, transparent 96%);
+          mask-image: linear-gradient(#000 74%, transparent 96%);
+}
+
+.member-axis {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font: 700 15px/1 var(--font-ar);
+  color: var(--rw-700);
+}
+.member-axis span[lang] {
+  font: 600 10px/1 var(--font-en);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--rw-500);
+}
+.member-bubble {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--rw-700);
+  font: 700 15px/1 var(--font-ar);
+  color: var(--rw-paper);
+}
+.member-name {
+  margin: 18px 0 0;
+  font: 800 clamp(1.9rem, 3.2vw, 3.2rem)/1.15 var(--font-ar);
+  color: var(--rw-900);
+}
+.member-role { margin: 10px 0 0; font: 700 15px/1.5 var(--font-ar); color: var(--rw-700); }
+.member-bio {
+  max-width: 400px;
+  margin: 18px 0 0;
+  font: 400 clamp(15px, 1.15vw, 17px)/1.9 var(--font-ar);
+  color: var(--rw-ink-soft);
+}
+
+.team-tags { display: none; }
+.team-scroll { display: none; }
+
+/* ================================================== live: pinned drawing stage */
+.team.is-live .team-stage {
+  height: 100vh;
+  height: 100svh;
+  padding: calc(var(--nav-h) + 22px) var(--sp) 0;
+}
+.team.is-live .team-canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+.team.is-live.is-lens .team-canvas { cursor: none; }
+.team.is-live .member-img { display: none; }
+.team.is-live .team-list {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: block;
+  max-width: none;
+  margin: 0;
+  pointer-events: none;
+}
+/* the focused partner's card sits beside her drawing */
+.team.is-live .member-card {
+  position: absolute;
+  top: var(--nav-h);
+  bottom: 0;
+  right: max(var(--sp), 5vw);
+  width: min(420px, 34vw);
+  height: fit-content;
+  margin-block: auto;      /* centred in the space under the nav, no transform (GSAP animates y) */
+  visibility: hidden;
+  opacity: 0;
+}
+.team.is-live .team-tags {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.member-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  text-align: center;
+  opacity: 0;
+}
+.member-tag b { font: 800 clamp(13px, 1.1vw, 16px)/1 var(--font-ar); color: var(--rw-900); }
+.member-tag span { font: 600 12px/1 var(--font-ar); color: var(--rw-500); }
+.team.is-live .team-scroll { display: block; }
+.team.is-live .team-scroll > * { opacity: 0; }
+
+/* ------------------------------------------------------------ closing line */
+.team-outro {
+  position: relative;
+  padding: clamp(72px, 12svh, 140px) var(--sp);
+  background: var(--rw-paper);
+}
+.team-outro-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-top: 32px;
+  border-top: 1px solid rgba(91, 15, 26, .2);
+}
+.team-outro-title { margin: 0; font: 800 clamp(1.4rem, 2.4vw, 2.2rem)/1.4 var(--font-ar); color: var(--rw-900); }
+.team-outro-title span { color: var(--rw-700); }
+.team-outro-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 900px) {
+  .team-list { grid-template-columns: 1fr; max-width: 520px; }
+  .member-img { height: clamp(320px, 60svh, 480px); }
+}
+
+/* phones: the card docks at the bottom, under the focused drawing */
+@media (max-width: 759px) {
+  .team-title-en { display: none; }
+  .team.is-live .member-card {
+    top: auto;
+    right: 12px;
+    bottom: 14px;
+    left: 12px;
+    width: auto;
+    margin: 0;
+    padding: 16px 18px 14px;
+    border: 1px solid rgba(91, 15, 26, .2);
+    background: rgba(245, 243, 240, .94);
+  }
+  .team.is-live .member-name { margin-top: 12px; font-size: 1.6rem; }
+  .team.is-live .member-role { margin-top: 6px; font-size: 14px; }
+  .team.is-live .member-bio { margin-top: 8px; font-size: 14px; line-height: 1.75; }
+  .member-tag b { font-size: 12px; }
+  .member-tag span { display: none; }
+  .team-outro-actions, .team-outro-actions .btn { width: 100%; justify-content: center; }
+}

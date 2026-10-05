@@ -1,0 +1,8 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "rawand-site", "runtimeExecutable": "php", "runtimeArgs": ["-S", "127.0.0.1:5173", ".claude/router.php"], "port": 5173 },
+    { "name": "rawand-php", "runtimeExecutable": "php", "runtimeArgs": ["-S", "127.0.0.1:5180", ".claude/router.php"], "port": 5180 },
+    { "name": "rawand-static", "runtimeExecutable": "python", "runtimeArgs": [".claude/serve.py", "5174"], "port": 5174 }
+  ]
+}

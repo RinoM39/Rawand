@@ -1,0 +1,11 @@
+# secrets: the real admin email + password live only on the server
+api/config.php
+
+# content + runtime files written by api/index.php — never overwrite them from git
+data/*
+!data/.htaccess
+uploads/*
+!uploads/.htaccess
+
+# local test leftovers
+*.tmp

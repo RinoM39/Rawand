@@ -1,0 +1,332 @@
+/* =====================================================================
+   RAWAND — Contact (تواصل معنا) · sheet A-06
+   Its own page (contact.html). Info + a survey drawing of the studio's point on the map, and a project-brief form drawn as
+   a sheet: each of its three steps inks one of the logo's three lines; sending grows the leaf.
+   Uses the tokens, buttons and .sheet-head from hero.css.
+   ===================================================================== */
+
+.contact {
+  position: relative;
+  min-height: 100svh;
+  padding: calc(var(--nav-h) + clamp(40px, 8svh, 88px)) var(--sp) clamp(80px, 12svh, 140px);
+  background: var(--rw-paper);
+  overflow: hidden;
+  isolation: isolate;
+}
+.contact-paper {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(216, 209, 201, .5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(216, 209, 201, .5) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
+  -webkit-mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+          mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+}
+.contact-wrap { max-width: 1320px; margin-inline: auto; }
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: clamp(40px, 6vw, 110px);
+  align-items: start;
+}
+
+/* ------------------------------------------------------------ info side */
+.contact-heading {
+  margin: 0;
+  font: 800 clamp(2.2rem, 4.2vw, 4.2rem)/1.15 var(--font-ar);
+  color: var(--rw-900);
+}
+.contact-heading span { color: var(--rw-700); }
+.contact-heading-en {
+  margin: 14px 0 0;
+  font: 300 clamp(1rem, 1.3vw, 1.25rem)/1.4 var(--font-en);
+  text-align: right;
+  color: var(--rw-700);
+}
+.contact-heading-en em {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.32em;
+  line-height: 1;
+}
+.contact-lead {
+  max-width: 440px;
+  margin: 26px 0 0;
+  font: 400 clamp(15px, 1.15vw, 17px)/1.9 var(--font-ar);
+  color: var(--rw-ink-soft);
+}
+
+.contact-channels { margin: 40px 0 0; }
+.contact-channels div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(91, 15, 26, .16);
+}
+.contact-channels div:last-child { border-bottom: 1px solid rgba(91, 15, 26, .16); }
+.contact-channels dt { font: 600 13px/1.4 var(--font-ar); color: var(--rw-500); }
+.contact-channels dt span {
+  margin-inline-start: 6px;
+  font: 600 9px/1 var(--font-en);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+}
+.contact-channels dd { margin: 0; font: 700 15px/1.4 var(--font-ar); color: var(--rw-900); text-align: left; }
+.contact-channels a { border-bottom: 1px solid rgba(91, 15, 26, .25); transition: color .3s var(--ease-out), border-color .3s var(--ease-out); }
+.contact-channels a:hover { color: var(--rw-700); border-color: var(--rw-700); }
+
+.contact-map { margin: 36px 0 0; }
+.contact-survey { display: block; width: 100%; height: auto; overflow: visible; color: var(--rw-900); direction: ltr; }
+.contact-map figcaption {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(91, 15, 26, .16);
+  font: 600 10px/1 var(--font-en);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--rw-500);
+}
+.contact-survey .ln { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; }
+.contact-survey .thin { stroke-width: .7; opacity: .4; }
+.contact-survey .bold { stroke-width: 1.8; }
+.contact-survey .dash { fill: none; stroke: var(--rw-500); stroke-width: .8; stroke-dasharray: 4 4; }
+.contact-survey .solid { fill: var(--rw-700); stroke: none; }
+.contact-survey .lbl { font: 600 8px var(--font-en); letter-spacing: .08em; fill: var(--rw-500); }
+.contact-survey .lbl.ar { font: 800 12px var(--font-ar); letter-spacing: 0; fill: var(--rw-700); direction: rtl; }
+.contact-survey .pulse {
+  fill: none;
+  stroke: var(--rw-700);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: survey-pulse 2.4s var(--ease-out) infinite;
+}
+@keyframes survey-pulse {
+  from { transform: scale(.5); opacity: .9; }
+  to   { transform: scale(3); opacity: 0; }
+}
+
+/* ------------------------------------------------------------ the brief (a drawing sheet) */
+.brief {
+  position: relative;
+  padding: clamp(24px, 3vw, 40px);
+  border: 1px solid rgba(91, 15, 26, .3);
+  background: rgba(245, 243, 240, .94);
+}
+.brief::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(91, 15, 26, .1);
+  pointer-events: none;
+}
+.brief-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(91, 15, 26, .16);
+}
+.brief-title { margin: 0; font: 800 clamp(20px, 1.8vw, 26px)/1.2 var(--font-ar); color: var(--rw-900); }
+/* the logo, completed one line per finished step */
+.brief-mark { flex: none; width: 62px; height: 64px; overflow: visible; fill: var(--rw-900); }
+.brief-mark .bm-ghost { fill: none; stroke: rgba(158, 74, 82, .4); stroke-width: .7; stroke-dasharray: 2 2; }
+
+/* (a legend sits on the fieldset's top edge, so the step spacing is a margin, not padding) */
+.brief-step { min-width: 0; margin: 36px 0 0; padding: 0; border: 0; }
+.brief-step legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 0;
+  font: 700 16px/1 var(--font-ar);
+  color: var(--rw-900);
+}
+.brief-num {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--rw-500);
+  border-radius: 50%;
+  background: var(--rw-paper);
+  font: 700 13px/1 var(--font-ar);
+  color: var(--rw-900);
+  transition: background-color .4s var(--ease-out), border-color .4s var(--ease-out), color .4s var(--ease-out);
+}
+.brief-step.is-done .brief-num { border-color: var(--rw-700); background: var(--rw-700); color: var(--rw-paper); }
+
+.brief-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px 28px;
+}
+.field { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.field label,
+.group-label { font: 600 12px/1.3 var(--font-ar); color: var(--rw-500); }
+.field label small { font: 600 10px/1 var(--font-en); }
+.group-label { margin: 0 0 12px; }
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 8px 0 10px;
+  border: 0;
+  border-bottom: 1px solid rgba(91, 15, 26, .28);
+  border-radius: 0;
+  background: transparent;
+  font: 600 16px/1.5 var(--font-ar);
+  color: var(--rw-900);
+  outline: none;
+  -webkit-appearance: none;
+          appearance: none;
+}
+.field textarea { min-height: 112px; resize: vertical; line-height: 1.8; }
+.field input::placeholder,
+.field textarea::placeholder { font-weight: 400; color: rgba(158, 74, 82, .45); }
+/* focus: a pen line drawn under the field, right to left */
+.field::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1.5px;
+  background: var(--rw-700);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform .5s var(--ease-out);
+}
+.field:focus-within::after { transform: scaleX(1); }
+.field.is-invalid input,
+.field.is-invalid textarea { border-bottom-color: var(--rw-700); }
+.field-err {
+  display: block;
+  font: 600 12px/1.4 var(--font-ar);
+  color: var(--rw-700);
+}
+.field .field-err { position: absolute; top: calc(100% + 5px); right: 0; }
+.field-err:empty { display: none; }
+.chips + .field-err,
+.phases + .field-err { margin: -2px 0 14px; }
+
+/* project type: chips */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.chip { position: relative; cursor: pointer; }
+.chip input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.chip span {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid rgba(91, 15, 26, .28);
+  font: 600 14px/1 var(--font-ar);
+  color: var(--rw-900);
+  transition: background-color .3s var(--ease-out), border-color .3s var(--ease-out), color .3s var(--ease-out);
+}
+.chip input:checked + span { border-color: var(--rw-700); background: var(--rw-700); color: var(--rw-paper); }
+.chip input:focus-visible + span { outline: 2px solid var(--rw-700); outline-offset: 2px; }
+
+/* services: the same three phase squares as the project sheets */
+.phases {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 26px;
+}
+.phases::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  left: calc(33.333% - 6px);
+  height: 1px;
+  background: rgba(158, 74, 82, .45);
+}
+.phase { position: relative; cursor: pointer; }
+.phase input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.phase span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  font: 600 14px/1 var(--font-ar);
+  color: rgba(158, 74, 82, .8);
+  transition: color .3s var(--ease-out);
+}
+.phase span::before {
+  content: '';
+  position: relative;
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--rw-500);
+  background: var(--rw-paper);
+  transition: background-color .3s var(--ease-out), border-color .3s var(--ease-out);
+}
+.phase input:checked + span { color: var(--rw-900); }
+.phase input:checked + span::before { border-color: var(--rw-700); background: var(--rw-700); }
+.phase input:focus-visible + span::before { outline: 2px solid var(--rw-700); outline-offset: 2px; }
+
+@media (hover: hover) {
+  .chip:hover span { border-color: var(--rw-700); }
+  .phase:hover span { color: var(--rw-900); }
+}
+
+.brief-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(91, 15, 26, .16);
+}
+.brief-note { max-width: 300px; margin: 0; font: 400 13px/1.7 var(--font-ar); color: var(--rw-ink-soft); }
+
+/* sent: a studio stamp over the sheet */
+.brief-done {
+  position: absolute;
+  inset: 7px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;        /* the stamp lands where the send button was */
+  gap: 14px;
+  padding: 32px 32px clamp(40px, 6vw, 72px);
+  background: var(--rw-paper);
+  text-align: center;
+}
+.brief-done[hidden] { display: none; }
+.brief-stamp { width: 150px; height: 150px; overflow: visible; fill: none; stroke: var(--rw-700); stroke-width: 1; direction: ltr; }
+.brief-stamp text { fill: var(--rw-700); stroke: none; font: 600 9.5px var(--font-en); letter-spacing: .2em; }
+.brief-stamp .stamp-tick { stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.brief-done-title { margin: 6px 0 0; font: 800 clamp(1.5rem, 2.2vw, 2rem)/1.3 var(--font-ar); color: var(--rw-900); outline: none; }
+.brief-done-text { max-width: 320px; margin: 0 0 10px; font: 400 15px/1.8 var(--font-ar); color: var(--rw-ink-soft); }
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 980px) {
+  .contact-grid { grid-template-columns: minmax(0, 1fr); }
+  .contact-map { max-width: 560px; }
+}
+@media (max-width: 560px) {
+  .brief { padding: 22px 18px; }
+  .brief-row { grid-template-columns: minmax(0, 1fr); }
+  .brief-send { width: 100%; justify-content: center; }
+  .chip span { height: 36px; padding: 0 13px; font-size: 13px; }
+  .phase span { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-survey .pulse { animation: none; }
+}

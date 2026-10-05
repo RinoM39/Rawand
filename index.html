@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>روند | RAWAND — Architecture &amp; Planning</title>
+  <meta name="description" content="روند — استوديو للاستشارات الهندسية والتصميم والتنفيذ في الرياض. تصاميم تنسجم فيها الوظيفة والجمال والاستدامة.">
+  <meta name="theme-color" content="#F5F3F0">
+  <link rel="icon" type="image/svg+xml" href="assets/logo/rawand-mark.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=Montserrat:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/hero.css?v=3">
+  <link rel="stylesheet" href="css/about.css?v=6">
+  <link rel="stylesheet" href="css/services.css?v=5">
+  <link rel="stylesheet" href="css/projects.css?v=5">
+  <link rel="stylesheet" href="css/site.css?v=7">
+  <link rel="stylesheet" href="css/transition.css?v=6">
+  <link rel="stylesheet" href="css/i18n.css?v=1">
+  <!-- language (?lang=en|ar, remembered) and whether the page was opened from inside the site
+       (js/transition.js) — set before anything is drawn -->
+  <script>(function(){var d=document.documentElement,l=null;try{var q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='ar')localStorage.setItem('rw-lang',q);l=localStorage.getItem('rw-lang')||q}catch(e){}if(l==='en'){d.lang='en';d.dir='ltr'}try{if(sessionStorage.getItem('rw-pt')){sessionStorage.removeItem('rw-pt');d.dataset.arrive='1'}}catch(e){}})();</script>
+  <noscript><style>.intro{display:none}</style></noscript>
+</head>
+<body>
+
+  <!-- ================= INTRO: three lines draw the logo ================= -->
+  <div class="intro" id="intro" aria-hidden="true">
+    <div class="intro-paper"></div>
+    <div class="intro-axes" id="introAxes"></div>
+    <div class="intro-stage">
+      <svg class="intro-logo" id="introLogo" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+  </div>
+
+  <!-- ================= NAV ================= -->
+  <header class="nav" id="nav">
+    <a class="nav-brand" href="#top" aria-label="روند — الصفحة الرئيسية">
+      <svg class="nav-logo" id="navLogo" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="القائمة الرئيسية">
+      <a href="#about">من نحن</a>
+      <a href="#services">خدماتنا</a>
+      <a href="#projects">مشاريعنا</a>
+      <a href="team.html">الفريق</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="nav-lang" href="#" lang="en" aria-label="English">EN</a>
+      <a class="btn btn-primary btn-sm" href="contact.html">تواصل معنا</a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="القائمة">
+        <span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ================= HERO: one building, three layers — one per partner ================= -->
+    <section class="hero" id="hero" aria-labelledby="heroTitle">
+      <div class="hero-paper" aria-hidden="true"></div>
+      <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+
+      <h1 class="sr-only" id="heroTitle">روند — ثلاثة عقول، رؤية واحدة</h1>
+
+      <!-- One layer of the building per partner. Edit names here — the intro reads them too. -->
+      <ol class="hero-layers" aria-label="فريق روند">
+        <li class="layer-tag">
+          <span class="tag-body">
+            <span class="tag-title">الوظيفة <span class="tag-en" lang="en">Function</span></span>
+            <span class="tag-meta"><span class="tag-part">الهيكل الإنشائي · </span><b class="tag-name">الشريك الأول</b></span>
+          </span>
+        </li>
+        <li class="layer-tag">
+          <span class="tag-body">
+            <span class="tag-title">الجمال <span class="tag-en" lang="en">Beauty</span></span>
+            <span class="tag-meta"><span class="tag-part">الواجهة · </span><b class="tag-name">الشريك الثاني</b></span>
+          </span>
+        </li>
+        <li class="layer-tag">
+          <span class="tag-body">
+            <span class="tag-title">الاستدامة <span class="tag-en" lang="en">Sustainability</span></span>
+            <span class="tag-meta"><span class="tag-part">السطح الأخضر · </span><b class="tag-name">الشريك الثالث</b></span>
+          </span>
+        </li>
+      </ol>
+
+      <div class="hero-scroll" aria-hidden="true"><span class="scroll-mouse"></span></div>
+    </section>
+
+    <!-- ================= ABOUT: sheet A-02 ================= -->
+    <section class="about" id="about" aria-labelledby="aboutTitle">
+      <div class="about-paper" aria-hidden="true"></div>
+
+      <div class="about-wrap">
+        <header class="sheet-head">
+          <h2 class="sheet-label" id="aboutTitle">من نحن</h2>
+          <i class="sheet-rule" aria-hidden="true"></i>
+        </header>
+
+        <div class="about-intro">
+          <p class="about-statement">روند استوديو للعمارة والتخطيط في الرياض، يجمع <em>ثلاثة شركاء</em> على فكرة واحدة: أن المبنى الجيد يولد حين تتوازن <em>الوظيفة والجمال والاستدامة.</em> نرافق كل مشروع من الاستشارة الأولى، إلى التصميم، حتى التنفيذ.</p>
+
+          <figure class="about-figure">
+            <svg class="about-mark" id="aboutMark" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+          </figure>
+        </div>
+
+        <div class="about-pillars">
+          <article class="pillar">
+            <h3 class="dim"><i class="dim-line" aria-hidden="true"></i><span class="dim-label">رؤيتنا <small lang="en">Vision</small></span><i class="dim-line" aria-hidden="true"></i></h3>
+            <p>أن نكون الخيار الأول في تقديم حلول هندسية مبتكرة ومستدامة تصنع قيمة حقيقية لعملائنا وللمجتمع.</p>
+          </article>
+          <article class="pillar">
+            <h3 class="dim"><i class="dim-line" aria-hidden="true"></i><span class="dim-label">رسالتنا <small lang="en">Mission</small></span><i class="dim-line" aria-hidden="true"></i></h3>
+            <p>نقدّم خدمات هندسية متكاملة بأعلى معايير الجودة والاحترافية، نحو تصاميم تنسجم فيها الوظيفة والجمال والاستدامة.</p>
+          </article>
+        </div>
+
+        <div class="about-values">
+          <h3 class="values-title">قيمنا <small lang="en">Values</small></h3>
+          <ul class="values-grid">
+            <li class="value">
+              <i class="value-top" aria-hidden="true"></i><i class="value-rule" aria-hidden="true"></i>
+              <span class="value-axis" aria-hidden="true">أ</span>
+              <h4>العمل الجماعي</h4>
+              <p class="value-en" lang="en">Teamwork</p>
+              <p class="value-text">نعمل بروح فريق واحد لتحقيق الأفضل.</p>
+            </li>
+            <li class="value">
+              <i class="value-top" aria-hidden="true"></i><i class="value-rule" aria-hidden="true"></i>
+              <span class="value-axis" aria-hidden="true">ب</span>
+              <h4>المصداقية</h4>
+              <p class="value-en" lang="en">Integrity</p>
+              <p class="value-text">نؤمن بالشفافية وبناء الثقة.</p>
+            </li>
+            <li class="value">
+              <i class="value-top" aria-hidden="true"></i><i class="value-rule" aria-hidden="true"></i>
+              <span class="value-axis" aria-hidden="true">ج</span>
+              <h4>الابتكار</h4>
+              <p class="value-en" lang="en">Innovation</p>
+              <p class="value-text">نبتكر حلولاً هندسية مستدامة وعصرية.</p>
+            </li>
+            <li class="value">
+              <i class="value-top" aria-hidden="true"></i><i class="value-rule" aria-hidden="true"></i><i class="value-rule is-end" aria-hidden="true"></i>
+              <span class="value-axis" aria-hidden="true">د</span>
+              <h4>الاحترافية</h4>
+              <p class="value-en" lang="en">Professionalism</p>
+              <p class="value-text">نلتزم بأعلى معايير الجودة والدقة.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <!-- ================= SERVICES: sheet A-03 ================= -->
+    <section class="services" id="services" aria-labelledby="servicesTitle">
+      <div class="services-paper" aria-hidden="true"></div>
+
+      <div class="services-wrap">
+        <header class="sheet-head">
+          <h2 class="sheet-label" id="servicesTitle">خدماتنا</h2>
+          <i class="sheet-rule" aria-hidden="true"></i>
+        </header>
+
+        <div class="svc-intro">
+          <div>
+            <p class="svc-heading">ثلاث خدمات،<br><span>مسار واحد.</span></p>
+            <p class="svc-heading-en" lang="en" dir="ltr">Three services. <em>One</em> continuous path.</p>
+          </div>
+          <p class="svc-lead">نرافق المشروع في كل مراحله: نبدأ بقراءة الموقع والاحتياج، نحوّل الفكرة إلى تصميم متكامل، ثم نتابع تنفيذه في الموقع حتى التسليم.</p>
+        </div>
+
+        <!-- Service copy is a draft — adjust the lists to match what the team actually offers. -->
+        <ol class="svc-grid">
+          <li class="svc">
+            <article class="svc-sheet">
+              <figure class="svc-figure"><canvas class="svc-canvas" data-scene="survey" aria-hidden="true"></canvas></figure>
+              <div class="svc-body">
+                <h3 class="svc-title">الاستشارات الهندسية <span class="svc-en" lang="en">Consulting</span></h3>
+                <p class="svc-desc">نقرأ الموقع والاحتياج قبل رسم أي خط، لنضع للمشروع أساساً واضحاً ومدروساً.</p>
+                <ul class="svc-list">
+                  <li>دراسة الموقع وتحليله</li>
+                  <li>دراسات الجدوى والبرنامج الوظيفي</li>
+                  <li>مراجعة المخططات والتصاميم</li>
+                </ul>
+              </div>
+              <footer class="svc-foot">
+                <span lang="en" dir="ltr">Site survey · Triangulation</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+              </footer>
+            </article>
+            <i class="svc-link" aria-hidden="true"></i>
+          </li>
+
+          <li class="svc">
+            <article class="svc-sheet">
+              <figure class="svc-figure"><canvas class="svc-canvas" data-scene="golden" aria-hidden="true"></canvas></figure>
+              <div class="svc-body">
+                <h3 class="svc-title">التصميم <span class="svc-en" lang="en">Design</span></h3>
+                <p class="svc-desc">نحوّل الفكرة إلى تصميم معماري وداخلي متكامل، يوازن بين الوظيفة والجمال والاستدامة.</p>
+                <ul class="svc-list">
+                  <li>التصميم المعماري والداخلي</li>
+                  <li>التخطيط العمراني</li>
+                  <li>المخططات التنفيذية</li>
+                </ul>
+              </div>
+              <footer class="svc-foot">
+                <span lang="en" dir="ltr">Proportion · Golden section</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+              </footer>
+            </article>
+            <i class="svc-link" aria-hidden="true"></i>
+          </li>
+
+          <li class="svc">
+            <article class="svc-sheet">
+              <figure class="svc-figure"><canvas class="svc-canvas" data-scene="assembly" aria-hidden="true"></canvas></figure>
+              <div class="svc-body">
+                <h3 class="svc-title">التنفيذ <span class="svc-en" lang="en">Execution</span></h3>
+                <p class="svc-desc">نتابع المشروع في الموقع خطوة بخطوة، ليُبنى كما صُمّم تماماً.</p>
+                <ul class="svc-list">
+                  <li>إدارة المشروع</li>
+                  <li>الإشراف على التنفيذ</li>
+                  <li>ضبط الجودة والتسليم</li>
+                </ul>
+              </div>
+              <footer class="svc-foot">
+                <span lang="en" dir="ltr">Construction · Assembly</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+              </footer>
+            </article>
+          </li>
+        </ol>
+
+        <div class="svc-cta">
+          <p>لديك مشروع؟ <span>لنبدأ من الموقع.</span></p>
+          <a class="btn btn-primary" href="contact.html">
+            ابدأ مشروعك
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PROJECTS · sheet A-04 ================= -->
+    <section class="projects" id="projects" aria-labelledby="projectsTitle">
+      <div class="prj-stage">
+        <div class="projects-paper" aria-hidden="true"></div>
+
+        <div class="projects-wrap">
+          <header class="sheet-head">
+            <h2 class="sheet-label" id="projectsTitle">مشاريعنا</h2>
+            <i class="sheet-rule" aria-hidden="true"></i>
+          </header>
+        </div>
+
+        <!-- The four projects below are SAMPLE content — replace names, places, years and areas with the team's real work. -->
+        <div class="prj-rail">
+          <ol class="prj-track">
+            <li class="prj-lead">
+              <p class="prj-heading">من الفكرة،<br><span>إلى المكان.</span></p>
+              <p class="prj-heading-en" lang="en" dir="ltr">Selected works, drawn <em>line</em> by line.</p>
+              <p class="prj-lead-text">مختارات من أعمالنا في العمارة والتخطيط. لكل مشروع لوحته، ولكل لوحة قصة توازن بين الوظيفة والجمال والاستدامة.</p>
+              <p class="prj-hint" aria-hidden="true">
+                مرّر لاستعراض المشاريع
+                <svg viewBox="0 0 20 20"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+              </p>
+            </li>
+
+            <li class="prj">
+              <article class="prj-sheet" aria-labelledby="prj1">
+                <div class="prj-info">
+                  <header class="prj-top">
+                    <span class="prj-cat">سكني <span lang="en">Residential</span></span>
+                  </header>
+                  <h3 class="prj-title" id="prj1">فيلا الياسمين <span class="prj-en" lang="en">Al-Yasmin Villa</span></h3>
+                  <p class="prj-desc">فيلا عائلية بطابقين تستلهم العمارة النجدية: جدران صمّاء تحمي من الشمس، ومشربية تمنح الخصوصية والضوء معاً.</p>
+                  <dl class="prj-meta">
+                    <div><dt>الموقع</dt><dd>الرياض — حي الياسمين</dd></div>
+                    <div><dt>السنة</dt><dd>٢٠٢٥</dd></div>
+                    <div><dt>المساحة</dt><dd>٦٥٠ م²</dd></div>
+                  </dl>
+                  <div class="prj-scope">
+                    <span class="prj-scope-label">نطاق عملنا</span>
+                    <ol class="prj-phases">
+                      <li class="is-on">استشارة</li>
+                      <li class="is-on">تصميم</li>
+                      <li class="is-on">تنفيذ</li>
+                    </ol>
+                  </div>
+                </div>
+                <figure class="prj-figure">
+                  <svg class="prj-drawing" data-drawing="villa" viewBox="0 0 520 340" aria-hidden="true"></svg>
+                  <figcaption class="prj-cap" lang="en" dir="ltr"><span>South elevation</span><span>1:100</span></figcaption>
+                </figure>
+              </article>
+            </li>
+
+            <li class="prj">
+              <article class="prj-sheet" aria-labelledby="prj2">
+                <div class="prj-info">
+                  <header class="prj-top">
+                    <span class="prj-cat">تجاري <span lang="en">Commercial</span></span>
+                  </header>
+                  <h3 class="prj-title" id="prj2">مكاتب الواحة <span class="prj-en" lang="en">Al-Waha Offices</span></h3>
+                  <p class="prj-desc">مبنى مكاتب بعشرة طوابق، تكسو واجهته زعانف عمودية تكسر أشعة الشمس وتخفّض استهلاك الطاقة.</p>
+                  <dl class="prj-meta">
+                    <div><dt>الموقع</dt><dd>الرياض — حي العليا</dd></div>
+                    <div><dt>السنة</dt><dd>٢٠٢٤</dd></div>
+                    <div><dt>المساحة</dt><dd>١٢٬٤٠٠ م²</dd></div>
+                  </dl>
+                  <div class="prj-scope">
+                    <span class="prj-scope-label">نطاق عملنا</span>
+                    <ol class="prj-phases">
+                      <li class="is-on">استشارة</li>
+                      <li class="is-on">تصميم</li>
+                      <li aria-hidden="true">تنفيذ</li>
+                    </ol>
+                  </div>
+                </div>
+                <figure class="prj-figure">
+                  <svg class="prj-drawing" data-drawing="tower" viewBox="0 0 520 340" aria-hidden="true"></svg>
+                  <figcaption class="prj-cap" lang="en" dir="ltr"><span>East elevation</span><span>1:250</span></figcaption>
+                </figure>
+              </article>
+            </li>
+
+            <li class="prj">
+              <article class="prj-sheet" aria-labelledby="prj3">
+                <div class="prj-info">
+                  <header class="prj-top">
+                    <span class="prj-cat">ثقافي <span lang="en">Cultural</span></span>
+                  </header>
+                  <h3 class="prj-title" id="prj3">المركز المجتمعي <span class="prj-en" lang="en">Community Centre</span></h3>
+                  <p class="prj-desc">رواق من الأقواس يظلّل الساحة، وملقف هواء يستعيد التبريد الطبيعي، في مبنى يجمع أهل الحي.</p>
+                  <dl class="prj-meta">
+                    <div><dt>الموقع</dt><dd>الرياض — حي النرجس</dd></div>
+                    <div><dt>السنة</dt><dd>٢٠٢٦</dd></div>
+                    <div><dt>المساحة</dt><dd>٣٬٢٠٠ م²</dd></div>
+                  </dl>
+                  <div class="prj-scope">
+                    <span class="prj-scope-label">نطاق عملنا</span>
+                    <ol class="prj-phases">
+                      <li aria-hidden="true">استشارة</li>
+                      <li class="is-on">تصميم</li>
+                      <li class="is-on">تنفيذ</li>
+                    </ol>
+                  </div>
+                </div>
+                <figure class="prj-figure">
+                  <svg class="prj-drawing" data-drawing="center" viewBox="0 0 520 340" aria-hidden="true"></svg>
+                  <figcaption class="prj-cap" lang="en" dir="ltr"><span>North elevation</span><span>1:200</span></figcaption>
+                </figure>
+              </article>
+            </li>
+
+            <li class="prj">
+              <article class="prj-sheet" aria-labelledby="prj4">
+                <div class="prj-info">
+                  <header class="prj-top">
+                    <span class="prj-cat">تخطيط عمراني <span lang="en">Planning</span></span>
+                  </header>
+                  <h3 class="prj-title" id="prj4">مخطط حي الريحان <span class="prj-en" lang="en">Al-Rayhan Master Plan</span></h3>
+                  <p class="prj-desc">مخطط لحي متكامل يتوسطه محور أخضر، بشوارع تمنح الأولوية للمشاة والظل.</p>
+                  <dl class="prj-meta">
+                    <div><dt>الموقع</dt><dd>القصيم — بريدة</dd></div>
+                    <div><dt>السنة</dt><dd>٢٠٢٥</dd></div>
+                    <div><dt>المساحة</dt><dd>٤٨ هكتار</dd></div>
+                  </dl>
+                  <div class="prj-scope">
+                    <span class="prj-scope-label">نطاق عملنا</span>
+                    <ol class="prj-phases">
+                      <li class="is-on">استشارة</li>
+                      <li class="is-on">تصميم</li>
+                      <li aria-hidden="true">تنفيذ</li>
+                    </ol>
+                  </div>
+                </div>
+                <figure class="prj-figure">
+                  <svg class="prj-drawing" data-drawing="plan" viewBox="0 0 520 340" aria-hidden="true"></svg>
+                  <figcaption class="prj-cap" lang="en" dir="ltr"><span>Master plan</span><span>1:5000</span></figcaption>
+                </figure>
+              </article>
+            </li>
+
+            <li class="prj-next">
+              <div class="prj-next-sheet">
+                <svg class="prj-next-mark" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="18"/><path d="M32 4v56M4 32h56"/></svg>
+                <p class="prj-next-title">اللوحة التالية<br><span>لمشروعك.</span></p>
+                <p class="prj-next-en" lang="en" dir="ltr">The next sheet is <em>yours</em>.</p>
+                <a class="btn btn-primary" href="contact.html">
+                  ابدأ مشروعك
+                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                </a>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="prj-progress" aria-hidden="true">
+          <span class="prj-bar"><i></i></span>
+        </div>
+      </div>
+    </section>
+
+
+  </main>
+
+  <!-- ================= FOOTER: the curtain comes down (css/site.css, js/site.js) =================
+       Phone and email are PLACEHOLDERS — same as on the contact page. -->
+  <footer class="site-foot" id="siteFoot">
+    <svg class="foot-curtain" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0H100V100H0Z"/></svg>
+    <div class="foot-paper" aria-hidden="true"></div>
+
+    <div class="foot-inner">
+      <div class="foot-lead">
+        <p class="foot-title">لنرسم<br><span>مشروعك القادم.</span></p>
+        <a class="foot-cta" href="contact.html">
+          <span>ابدأ مشروعك</span>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+        </a>
+      </div>
+      <i class="foot-rule" aria-hidden="true"></i>
+
+      <div class="foot-cols">
+        <div class="foot-col foot-brand">
+          <a class="foot-logo-link" href="#top" aria-label="روند — الصفحة الرئيسية">
+            <svg class="foot-logo" id="footLogo" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+          </a>
+          <p>للاستشارات الهندسية — تصميم وتنفيذ.<br>ثلاثة شركاء، رؤية واحدة: الوظيفة والجمال والاستدامة.</p>
+        </div>
+        <nav class="foot-col" aria-label="روابط الموقع">
+          <p class="foot-col-title">الموقع</p>
+          <a href="#top">الرئيسية</a>
+          <a href="#about">من نحن</a>
+          <a href="#services">خدماتنا</a>
+          <a href="#projects">مشاريعنا</a>
+          <a href="team.html">الفريق</a>
+          <a href="contact.html">تواصل معنا</a>
+        </nav>
+        <div class="foot-col">
+          <p class="foot-col-title">تواصل</p>
+          <span dir="ltr">+966 5X XXX XXXX</span>
+          <a href="mailto:hello@example.com" dir="ltr">hello@example.com</a>
+          <span>الرياض، المملكة العربية السعودية</span>
+        </div>
+        <div class="foot-col">
+          <p class="foot-col-title">الخدمات</p>
+          <span>الاستشارات الهندسية</span>
+          <span>التصميم المعماري والداخلي</span>
+          <span>التنفيذ والإشراف</span>
+        </div>
+      </div>
+
+
+      <div class="foot-bar">
+        <p class="foot-copy">© ٢٠٢٦ روند للاستشارات الهندسية. صُمّم في الرياض.</p>
+        <a class="foot-up" href="#top" aria-label="إلى أعلى الصفحة"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4m-5 5 5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></a>
+      </div>
+    </div>
+
+    <div class="foot-word-wrap" aria-hidden="true">
+      <svg class="foot-word" id="footWord" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="js/logo-data.js?v=3"></script>
+  <script src="js/i18n.js?v=1"></script>
+  <script src="js/axo.js?v=3"></script>
+  <script src="js/hero.js?v=6"></script>
+  <script src="js/about.js?v=8"></script>
+  <script src="js/services.js?v=8"></script>
+  <script src="js/projects.js?v=6"></script>
+  <script src="js/site.js?v=8"></script>
+  <script src="js/transition.js?v=6"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+/* =====================================================================
+   RAWAND — page transition: "through the line"
+   A cross-document View Transition (the browser snapshots both pages):
+     1. the page you leave sinks back and dissolves into burgundy ink
+     2. the logo opens on it like a window — the R's three lines rise one by one, the leaf grows —
+        and through its shapes you already see the next page, live
+     3. the camera dives into the R's first line until it fills the screen: you are in
+   Browsers without cross-document view transitions (or with reduced motion) simply navigate.
+   The mask shapes are assets/transition/*.svg (generated from js/logo-data.js);
+   the rw-vt-mask keyframes are generated too — one size/position per layer per step.
+   ===================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+
+::view-transition { background: #5B0F1A; }
+::view-transition-image-pair(root) { isolation: auto; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation-duration: 1.7s;
+  animation-fill-mode: both;
+}
+
+/* the page you leave: sinks back, blurs, and the burgundy behind it takes over */
+::view-transition-old(root) {
+  animation-name: rw-vt-old;
+  animation-timing-function: cubic-bezier(.55, 0, .25, 1);
+}
+@keyframes rw-vt-old {
+  0%   { opacity: 1; transform: none; filter: none; }
+  38%  { opacity: .2; transform: scale(.95); filter: blur(2px) saturate(.4); }
+  100% { opacity: 0; transform: scale(.88); filter: blur(8px) saturate(0); }
+}
+
+/* the page you go to: seen through the logo, then the dive (it settles from a slight zoom) */
+::view-transition-new(root) {
+  animation-name: rw-vt-mask, rw-vt-new;
+  animation-timing-function: linear, cubic-bezier(.3, 0, .2, 1);
+  -webkit-mask-image: url("../assets/transition/line1.svg"), url("../assets/transition/line2.svg"), url("../assets/transition/line3.svg"), url("../assets/transition/leaf.svg"), url("../assets/transition/circle.svg");
+          mask-image: url("../assets/transition/line1.svg"), url("../assets/transition/line2.svg"), url("../assets/transition/line3.svg"), url("../assets/transition/leaf.svg"), url("../assets/transition/circle.svg");
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+}
+@keyframes rw-vt-new {
+  0%, 48% { transform: scale(1.14); }
+  100%    { transform: none; }
+}
+
+@keyframes rw-vt-mask {
+  0% {
+    -webkit-mask-size: 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  7.9% {
+    -webkit-mask-size: 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  8% {
+    -webkit-mask-size: 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - -0.611vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - -0.611vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  12.9% {
+    -webkit-mask-size: 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 8.093vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 8.093vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  13% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 8.201vmin), calc(50vw - 11vmin) calc(50vh - -0.611vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 8.201vmin), calc(50vw - 11vmin) calc(50vh - -0.611vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  17.9% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.087vmin), calc(50vw - 11vmin) calc(50vh - 8.093vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.087vmin), calc(50vw - 11vmin) calc(50vh - 8.093vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  18% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.109vmin), calc(50vw - 11vmin) calc(50vh - 8.201vmin), calc(50vw - 11vmin) calc(50vh - -0.611vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.109vmin), calc(50vw - 11vmin) calc(50vh - 8.201vmin), calc(50vw - 11vmin) calc(50vh - -0.611vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  22% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 10.842vmin), calc(50vw - 11vmin) calc(50vh - 7.016vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 10.842vmin), calc(50vw - 11vmin) calc(50vh - 7.016vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  25.9% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.383vmin), calc(50vw - 11vmin) calc(50vh - 10.396vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.383vmin), calc(50vw - 11vmin) calc(50vh - 10.396vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  26% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmin 0vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.384vmin), calc(50vw - 11vmin) calc(50vh - 10.444vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.384vmin), calc(50vw - 11vmin) calc(50vh - 10.444vmin), calc(50vw - 0vmin) calc(50vh - 0vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  27% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 4.386vmin 4.541vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 4.386vmin 4.541vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 10.842vmin), calc(50vw - 2.193vmin) calc(50vh - 2.27vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 10.842vmin), calc(50vw - 2.193vmin) calc(50vh - 2.27vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  30% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 13.983vmin 14.477vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 13.983vmin 14.477vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.354vmin), calc(50vw - 6.991vmin) calc(50vh - 7.238vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.354vmin), calc(50vw - 6.991vmin) calc(50vh - 7.238vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  32% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 17.895vmin 18.527vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 17.895vmin 18.527vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 8.948vmin) calc(50vh - 9.264vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 8.948vmin) calc(50vh - 9.264vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  36% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 21.487vmin 22.246vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 21.487vmin 22.246vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 10.743vmin) calc(50vh - 11.123vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 10.743vmin) calc(50vh - 11.123vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  40% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  50% {
+    -webkit-mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmax 0vmax;
+            mask-size: 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 22vmin 22.777vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 11vmin) calc(50vh - 11.389vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  56% {
+    -webkit-mask-size: 30.397vmin 31.471vmin, 30.397vmin 31.471vmin, 30.397vmin 31.471vmin, 30.397vmin 31.471vmin, 0vmax 0vmax;
+            mask-size: 30.397vmin 31.471vmin, 30.397vmin 31.471vmin, 30.397vmin 31.471vmin, 30.397vmin 31.471vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 13.289vmin) calc(50vh - 16.404vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  62% {
+    -webkit-mask-size: 42vmin 43.484vmin, 42vmin 43.484vmin, 42vmin 43.484vmin, 42vmin 43.484vmin, 0vmax 0vmax;
+            mask-size: 42vmin 43.484vmin, 42vmin 43.484vmin, 42vmin 43.484vmin, 42vmin 43.484vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 15.724vmin) calc(50vh - 23.59vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  67% {
+    -webkit-mask-size: 64.807vmin 67.097vmin, 64.807vmin 67.097vmin, 64.807vmin 67.097vmin, 64.807vmin 67.097vmin, 0vmax 0vmax;
+            mask-size: 64.807vmin 67.097vmin, 64.807vmin 67.097vmin, 64.807vmin 67.097vmin, 64.807vmin 67.097vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 18.835vmin) calc(50vh - 38.3vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  72% {
+    -webkit-mask-size: 100vmin 103.534vmin, 100vmin 103.534vmin, 100vmin 103.534vmin, 100vmin 103.534vmin, 0vmax 0vmax;
+            mask-size: 100vmin 103.534vmin, 100vmin 103.534vmin, 100vmin 103.534vmin, 100vmin 103.534vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 20.689vmin) calc(50vh - 62.032vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  74% {
+    -webkit-mask-size: 119.136vmin 123.346vmin, 119.136vmin 123.346vmin, 119.136vmin 123.346vmin, 119.136vmin 123.346vmin, 0vmax 0vmax;
+            mask-size: 119.136vmin 123.346vmin, 119.136vmin 123.346vmin, 119.136vmin 123.346vmin, 119.136vmin 123.346vmin, 0vmax 0vmax;
+    -webkit-mask-position: calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+            mask-position: calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 21.655vmin) calc(50vh - 74.95vmin), calc(50vw - 0vmax) calc(50vh - 0vmax);
+  }
+  78% {
+    -webkit-mask-size: 169.093vmin 175.068vmin, 169.093vmin 175.068vmin, 169.093vmin 175.068vmin, 169.093vmin 175.068vmin, 13.011vmax 13.011vmax;
+            mask-size: 169.093vmin 175.068vmin, 169.093vmin 175.068vmin, 169.093vmin 175.068vmin, 169.093vmin 175.068vmin, 13.011vmax 13.011vmax;
+    -webkit-mask-position: calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 6.506vmax) calc(50vh - 6.506vmax);
+            mask-position: calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 22.239vmin) calc(50vh - 109.355vmin), calc(50vw - 6.506vmax) calc(50vh - 6.506vmax);
+  }
+  82% {
+    -webkit-mask-size: 240vmin 248.481vmin, 240vmin 248.481vmin, 240vmin 248.481vmin, 240vmin 248.481vmin, 39.442vmax 39.442vmax;
+            mask-size: 240vmin 248.481vmin, 240vmin 248.481vmin, 240vmin 248.481vmin, 240vmin 248.481vmin, 39.442vmax 39.442vmax;
+    -webkit-mask-position: calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.721vmax) calc(50vh - 19.721vmax);
+            mask-position: calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.505vmin) calc(50vh - 159.435vmin), calc(50vw - 19.721vmax) calc(50vh - 19.721vmax);
+  }
+  86% {
+    -webkit-mask-size: 338.417vmin 350.375vmin, 338.417vmin 350.375vmin, 338.417vmin 350.375vmin, 338.417vmin 350.375vmin, 75.458vmax 75.458vmax;
+            mask-size: 338.417vmin 350.375vmin, 338.417vmin 350.375vmin, 338.417vmin 350.375vmin, 338.417vmin 350.375vmin, 75.458vmax 75.458vmax;
+    -webkit-mask-position: calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 37.729vmax) calc(50vh - 37.729vmax);
+            mask-position: calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 27.504vmin) calc(50vh - 224.814vmin), calc(50vw - 37.729vmax) calc(50vh - 37.729vmax);
+  }
+  91% {
+    -webkit-mask-size: 520vmin 538.375vmin, 520vmin 538.375vmin, 520vmin 538.375vmin, 520vmin 538.375vmin, 131.745vmax 131.745vmax;
+            mask-size: 520vmin 538.375vmin, 520vmin 538.375vmin, 520vmin 538.375vmin, 520vmin 538.375vmin, 131.745vmax 131.745vmax;
+    -webkit-mask-position: calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 65.873vmax) calc(50vh - 65.873vmax);
+            mask-position: calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 42.261vmin) calc(50vh - 345.442vmin), calc(50vw - 65.873vmax) calc(50vh - 65.873vmax);
+  }
+  95% {
+    -webkit-mask-size: 663.571vmin 687.019vmin, 663.571vmin 687.019vmin, 663.571vmin 687.019vmin, 663.571vmin 687.019vmin, 184.743vmax 184.743vmax;
+            mask-size: 663.571vmin 687.019vmin, 663.571vmin 687.019vmin, 663.571vmin 687.019vmin, 663.571vmin 687.019vmin, 184.743vmax 184.743vmax;
+    -webkit-mask-position: calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 92.371vmax) calc(50vh - 92.371vmax);
+            mask-position: calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 53.93vmin) calc(50vh - 440.818vmin), calc(50vw - 92.371vmax) calc(50vh - 92.371vmax);
+  }
+  100% {
+    -webkit-mask-size: 900vmin 931.802vmin, 900vmin 931.802vmin, 900vmin 931.802vmin, 900vmin 931.802vmin, 260vmax 260vmax;
+            mask-size: 900vmin 931.802vmin, 900vmin 931.802vmin, 900vmin 931.802vmin, 900vmin 931.802vmin, 260vmax 260vmax;
+    -webkit-mask-position: calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 130vmax) calc(50vh - 130vmax);
+            mask-position: calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 73.145vmin) calc(50vh - 597.88vmin), calc(50vw - 130vmax) calc(50vh - 130vmax);
+  }
+}

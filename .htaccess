@@ -1,0 +1,7 @@
+# RAWAND — Apache settings for the whole site
+Options -Indexes
+DirectoryIndex index.html index.php
+AddType video/mp4 .mp4
+AddType video/webm .webm
+AddType image/webp .webp
+AddType image/avif .avif

@@ -1,0 +1,68 @@
+/* =====================================================================
+   RAWAND — Arabic / English
+   The site is designed right-to-left. In English (<html lang="en" dir="ltr">, set by the inline
+   script in <head>, texts by js/i18n.js) this file mirrors what doesn't mirror by itself:
+   origins of drawn lines, arrows, edge rules, a few alignments — and switches the type.
+   ===================================================================== */
+
+html[lang="en"] { --font-ar: 'Montserrat', 'Cairo', system-ui, sans-serif; }
+
+/* ------------------------------------------------------------ the language switch (every screen size) */
+.nav-lang {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  height: 34px;
+  padding: 0 11px;
+  border: 1px solid rgba(91, 15, 26, .3);
+  border-radius: 17px;
+  color: var(--rw-900);
+  transition: background-color .35s var(--ease-out), color .35s var(--ease-out), border-color .35s var(--ease-out);
+}
+.nav-lang:hover { border-color: var(--rw-900); background: var(--rw-900); color: var(--rw-paper); }
+.nav-lang:lang(ar) { font: 700 16px/1 'Cairo', system-ui, sans-serif; letter-spacing: 0; }
+@media (max-width: 1080px) { .nav-lang { display: inline-grid; } }
+
+/* ------------------------------------------------------------ English: the type */
+/* small labels that only repeated the Arabic in English are hidden … */
+html[lang="en"] :is(.tag-en, .svc-en, .prj-en, .value-en, .dim small, .values-title small,
+  .prj-cat > span[lang="en"], .member-axis > span[lang="en"], .contact-channels dt > span[lang="en"]) { display: none; }
+/* … and the accent line under a heading carries the Arabic original */
+.is-accent-ar {
+  font-family: 'Cairo', system-ui, sans-serif !important;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: left !important;
+}
+html[lang="en"] :is(.about-statement, .pillar p, .svc-lead, .prj-lead-text, .contact-lead, .member-bio) { line-height: 1.7; }
+html[lang="en"] :is(.svc-heading, .prj-heading, .contact-heading, .team-title, .foot-title, .member-name, .prj-next-title) { letter-spacing: -.02em; }
+
+/* ------------------------------------------------------------ mirror: lines are drawn from the left */
+[dir="ltr"] .nav-links a::after,
+[dir="ltr"] .foot-col a::after { transform-origin: left center; }
+[dir="ltr"] :is(.sheet-rule, .foot-rule, .value-top, .prj-bar i, .field::after) { transform-origin: left center; }
+
+/* arrows point the way you read */
+[dir="ltr"] :is(.btn, .svc-foot, .prj-hint, .prj-go, .foot-cta) svg { scale: -1 1; }
+
+/* hero labels */
+[dir="ltr"] .tag-body { direction: ltr; text-align: left; }
+
+/* about: the structural grid of the values starts on the left */
+[dir="ltr"] .value-rule { right: auto; left: 0; }
+[dir="ltr"] .value-rule.is-end { left: auto; right: 0; }
+[dir="ltr"] .value-axis { right: auto; left: -15px; }
+
+/* services: the process arrows run left → right */
+@media (min-width: 901px) {
+  [dir="ltr"] .svc-link { left: auto; right: calc(-1 * var(--svc-gap)); transform-origin: left center; }
+  [dir="ltr"] .svc-link::after { left: auto; right: 0; border-right: 0; border-left: 6px solid var(--rw-500); }
+}
+
+/* projects + contact: values sit at the line's end; the phase line starts on the left */
+[dir="ltr"] :is(.prj-meta dd, .contact-channels dd) { text-align: right; }
+[dir="ltr"] .prj-phases::before { right: calc(33.333% - 5px); left: 5px; }
+[dir="ltr"] .phases::before { right: calc(33.333% - 6px); left: 6px; }
+[dir="ltr"] .prj-film { right: auto; left: 12px; }
