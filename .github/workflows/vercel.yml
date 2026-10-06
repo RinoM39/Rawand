@@ -1,0 +1,33 @@
+# Deploys the site to Vercel (project "rawand") on every push to main.
+# Needs one repo secret: VERCEL_TOKEN (Settings → Secrets and variables → Actions).
+# The org/project IDs below are not secret; they just point the CLI at the right project.
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: team_iW297LZ1c4AijOJ8fi6pHy3w
+      VERCEL_PROJECT_ID: prj_uSGYClVPLY6uquiZgV0mvKRHZY4i
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Waiting for the VERCEL_TOKEN secret
+        if: env.VERCEL_TOKEN == ''
+        run: echo "::warning::VERCEL_TOKEN secret is not set yet, so nothing was deployed."
+
+      - uses: actions/checkout@v4
+        if: env.VERCEL_TOKEN != ''
+
+      # Plain HTML/CSS/JS, no build step: upload the files (minus .vercelignore) and go live.
+      - name: Deploy to production
+        if: env.VERCEL_TOKEN != ''
+        run: npx --yes vercel@54 deploy --prod --yes --token="$VERCEL_TOKEN"
