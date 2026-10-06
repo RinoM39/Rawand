@@ -8,3 +8,5 @@ skills-lock.json
 .gitignore
 *.md
 *.tmp
+vercel.json
+.vercelignore

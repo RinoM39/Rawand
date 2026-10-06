@@ -1,0 +1,10 @@
+# not part of the public site (mirrors .assetsignore; the API lives on Neon, see backend/)
+.claude
+backend
+node_modules
+wrangler.jsonc
+_headers
+.assetsignore
+skills-lock.json
+*.md
+*.tmp

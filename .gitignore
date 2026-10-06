@@ -10,3 +10,4 @@ backend/.neon
 # agent skills (installed locally per machine)
 .claude/skills/
 skills-lock.json
+.vercel
