@@ -27,6 +27,11 @@ jobs:
       - uses: actions/checkout@v4
         if: env.VERCEL_TOKEN != ''
 
+      # Shows which Vercel account the token belongs to (must be the one that owns the project).
+      - name: Check the token's Vercel account
+        if: env.VERCEL_TOKEN != ''
+        run: npx --yes vercel@54 whoami --token="$VERCEL_TOKEN"
+
       # Plain HTML/CSS/JS, no build step: upload the files (minus .vercelignore) and go live.
       - name: Deploy to production
         if: env.VERCEL_TOKEN != ''
