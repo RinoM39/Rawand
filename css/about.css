@@ -197,3 +197,26 @@
 @media (max-width: 340px) {
   .values-grid { grid-template-columns: 1fr; }
 }
+
+/* ------------------------------------------------ what we offer: three lines under the dimension */
+.offer-list {
+  max-width: 540px;
+  margin: 26px auto 0;
+  padding: 0;
+  list-style: none;
+}
+.offer-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 0;
+  border-bottom: 1px dashed rgba(158, 74, 82, .38);
+}
+.offer-list li:first-child { padding-top: 0; }
+.offer-list b { font: 700 clamp(15px, 1.2vw, 18px)/1.5 var(--font-ar); color: var(--rw-900); white-space: nowrap; }
+.offer-list span { font: 400 clamp(13px, 1vw, 15px)/1.6 var(--font-ar); color: var(--rw-ink-soft); text-align: end; }
+@media (max-width: 560px) {
+  .offer-list li { flex-direction: column; gap: 2px; }
+  .offer-list span { text-align: start; }
+}

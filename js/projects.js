@@ -389,7 +389,6 @@
     // Each sheet's drafting follows its place on screen: rising into view, then sliding to the middle
     // (or, for the last sheets that never reach the middle, to where the slide stops).
     const done = sheets.map(() => -1);
-    let live = false;
     function update() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
@@ -407,8 +406,13 @@
       fill.style.transform = `scaleX(${slide.progress()})`;
       paper.style.backgroundPosition = `${gsap.getProperty(track, 'x')}px 0`;
     }
-    const tick = () => { if (live) update(); };
-    ScrollTrigger.create({ trigger: root, start: 'top bottom', end: 'bottom top', onToggle: self => { live = self.isActive; }, onRefresh: update });
+    // runs while any part of the section (pin spacer included) is on screen — measured directly,
+    // since a trigger made here can be measured before the pin's own room is added below it
+    const tick = () => {
+      const r = root.getBoundingClientRect();
+      if (r.bottom > 0 && r.top < window.innerHeight) update();
+    };
+    ScrollTrigger.addEventListener('refresh', update);
     gsap.ticker.add(tick);
     update();
 
@@ -426,6 +430,7 @@
 
     return () => {
       gsap.ticker.remove(tick);
+      ScrollTrigger.removeEventListener('refresh', update);
       track.removeEventListener('focusin', onFocus);
       root.classList.remove('is-rail');
       paper.style.backgroundPosition = '';
@@ -441,7 +446,8 @@
     opacity: 0, y: 24, duration: .9, stagger: .1, ease: 'power3.out',
     scrollTrigger: { trigger: q('.prj-lead')[0], start: 'top 82%' },
   });
-  // the pinned slide may be added after the rest of the page was measured
+  // the pinned slide may be added after the rest of the page was measured: re-order by place on the page
+  ScrollTrigger.sort();
   ScrollTrigger.refresh();
   }
 })();

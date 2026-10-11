@@ -38,25 +38,6 @@
 /* ------------------------------------------------------------ heading */
 .team-head { position: relative; z-index: 2; max-width: 1320px; margin-inline: auto; }
 .team-head .sheet-head { margin-bottom: 18px; }
-.team-titlebar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px 32px;
-}
-.team-title {
-  margin: 0;
-  font: 800 clamp(1.8rem, 3.2vw, 3rem)/1.2 var(--font-ar);
-  color: var(--rw-900);
-}
-.team-title span { color: var(--rw-700); }
-.team-title-en {
-  margin: 0;
-  font: 300 clamp(.95rem, 1.2vw, 1.15rem)/1.4 var(--font-en);
-  color: var(--rw-700);
-}
-.team-title-en em,
 .team-outro em {
   font-family: var(--font-accent);
   font-style: italic;
@@ -86,41 +67,45 @@
           mask-image: linear-gradient(#000 74%, transparent 96%);
 }
 
-.member-axis {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.member-role {
   margin: 0;
-  font: 700 15px/1 var(--font-ar);
+  font: 700 13px/1.6 var(--font-ar);
   color: var(--rw-700);
 }
-.member-axis span[lang] {
-  font: 600 10px/1 var(--font-en);
-  letter-spacing: .26em;
-  text-transform: uppercase;
-  color: var(--rw-500);
-}
-.member-bubble {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--rw-700);
-  font: 700 15px/1 var(--font-ar);
-  color: var(--rw-paper);
-}
 .member-name {
-  margin: 18px 0 0;
-  font: 800 clamp(1.9rem, 3.2vw, 3.2rem)/1.15 var(--font-ar);
+  margin: 14px 0 0;
+  font: 800 clamp(1.8rem, 2.9vw, 3rem)/1.15 var(--font-ar);
   color: var(--rw-900);
 }
-.member-role { margin: 10px 0 0; font: 700 15px/1.5 var(--font-ar); color: var(--rw-700); }
-.member-bio {
+.member-name small {
+  display: block;
+  margin-bottom: 6px;
+  font: 600 14px/1 var(--font-ar);
+  color: var(--rw-500);
+}
+.member-facts {
   max-width: 400px;
-  margin: 18px 0 0;
-  font: 400 clamp(15px, 1.15vw, 17px)/1.9 var(--font-ar);
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.member-facts li {
+  position: relative;
+  padding: 9px 22px 9px 0;
+  border-top: 1px solid rgba(91, 15, 26, .14);
+  font: 400 clamp(14px, 1.05vw, 16px)/1.7 var(--font-ar);
   color: var(--rw-ink-soft);
+}
+/* a short tick, like a dimension mark */
+.member-facts li::before {
+  content: '';
+  position: absolute;
+  top: 1.15em;
+  right: 2px;
+  width: 9px;
+  height: 1px;
+  background: var(--rw-700);
+  transform: rotate(-45deg);
 }
 
 .team-tags { display: none; }
@@ -186,6 +171,87 @@
 .team.is-live .team-scroll { display: block; }
 .team.is-live .team-scroll > * { opacity: 0; }
 
+/* ------------------------------------------------------------ the partners' sheets (title blocks) */
+.team-profiles {
+  position: relative;
+  padding: clamp(64px, 11svh, 120px) var(--sp) 0;
+  background: var(--rw-paper);
+}
+.profiles-wrap {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(20px, 2.4vw, 36px);
+  max-width: 1320px;
+  margin-inline: auto;
+}
+.profile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(91, 15, 26, .28);
+  background: rgba(245, 243, 240, .9);
+}
+/* crop marks at the corners */
+.profile::before,
+.profile::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: solid var(--rw-700);
+  pointer-events: none;
+}
+.profile::before { top: -6px; right: -6px; border-width: 1px 1px 0 0; }
+.profile::after { bottom: -6px; left: -6px; border-width: 0 0 1px 1px; }
+.profile-head {
+  padding: 26px clamp(20px, 2vw, 30px) 24px;
+  border-bottom: 1px solid rgba(91, 15, 26, .28);
+  background: var(--rw-900);
+  color: var(--rw-paper);
+}
+.profile-role { margin: 0; font: 600 12px/1.6 var(--font-ar); color: var(--rw-stone); opacity: .85; }
+.profile-name { margin: 10px 0 0; font: 800 clamp(1.35rem, 1.9vw, 1.8rem)/1.25 var(--font-ar); color: var(--rw-paper); }
+.profile-name small { display: block; margin-bottom: 4px; font: 500 13px/1 var(--font-ar); opacity: .7; }
+.profile-block { flex: 1; display: flex; flex-direction: column; margin: 0; }
+.profile-row {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  border-bottom: 1px solid rgba(91, 15, 26, .16);
+}
+.profile-row:last-child { flex: 1; border-bottom: 0; }
+.profile-row dt {
+  padding: 16px 14px;
+  border-left: 1px solid rgba(91, 15, 26, .16);
+  font: 700 12px/1.5 var(--font-ar);
+  color: var(--rw-500);
+}
+.profile-row dd { margin: 0; padding: 14px clamp(14px, 1.4vw, 20px); }
+.profile-row ul { margin: 0; padding: 0; list-style: none; }
+.profile-facts li,
+.profile-langs li { font: 400 14px/1.75 var(--font-ar); color: var(--rw-900); }
+.profile-facts li + li { margin-top: 4px; }
+.profile-langs span { color: var(--rw-500); font-size: 12px; }
+.profile-langs span::after { content: ':'; }
+.profile-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+.profile-skills li {
+  padding: 5px 10px;
+  border: 1px solid rgba(122, 30, 41, .35);
+  font: 500 12px/1.3 var(--font-en);
+  color: var(--rw-900);
+}
+.profile-skills li.is-text { width: 100%; border-style: dashed; font-family: var(--font-ar); line-height: 1.6; }
+.profile-contact li + li { margin-top: 2px; }
+.profile-contact a {
+  font: 500 13px/1.9 var(--font-en);
+  color: var(--rw-900);
+  text-decoration: none;
+  background: linear-gradient(var(--rw-700), var(--rw-700)) no-repeat 100% 100% / 0 1px;
+  transition: background-size .4s var(--ease-out), color .3s;
+  unicode-bidi: isolate;
+}
+.profile-contact a:hover,
+.profile-contact a:focus-visible { color: var(--rw-700); background-size: 100% 1px; background-position-x: 0; }
+
 /* ------------------------------------------------------------ closing line */
 .team-outro {
   position: relative;
@@ -210,12 +276,12 @@
 /* ------------------------------------------------------------ responsive */
 @media (max-width: 900px) {
   .team-list { grid-template-columns: 1fr; max-width: 520px; }
+  .profiles-wrap { grid-template-columns: 1fr; max-width: 560px; }
   .member-img { height: clamp(320px, 60svh, 480px); }
 }
 
 /* phones: the card docks at the bottom, under the focused drawing */
 @media (max-width: 759px) {
-  .team-title-en { display: none; }
   .team.is-live .member-card {
     top: auto;
     right: 12px;
@@ -227,9 +293,11 @@
     border: 1px solid rgba(91, 15, 26, .2);
     background: rgba(245, 243, 240, .94);
   }
-  .team.is-live .member-name { margin-top: 12px; font-size: 1.6rem; }
-  .team.is-live .member-role { margin-top: 6px; font-size: 14px; }
-  .team.is-live .member-bio { margin-top: 8px; font-size: 14px; line-height: 1.75; }
+  .team.is-live .member-role { font-size: 12px; }
+  .team.is-live .member-name { margin-top: 8px; font-size: 1.45rem; }
+  .team.is-live .member-name small { margin-bottom: 4px; font-size: 12px; }
+  .team.is-live .member-facts { margin-top: 10px; }
+  .team.is-live .member-facts li { padding-block: 5px; font-size: 13px; line-height: 1.6; }
   .member-tag b { font-size: 12px; }
   .member-tag span { display: none; }
   .team-outro-actions, .team-outro-actions .btn { width: 100%; justify-content: center; }

@@ -21,7 +21,9 @@
   // the language switch: "EN" on the Arabic site, "ع" on the English one
   document.querySelectorAll('.nav-lang').forEach(a => {
     const to = EN ? 'ar' : 'en';
-    a.href = location.pathname + '?lang=' + to;
+    const u = new URL(location.href);
+    u.searchParams.set('lang', to);
+    a.href = u.pathname + u.search;
     a.textContent = EN ? 'ع' : 'EN';
     a.lang = to;
     a.setAttribute('hreflang', to);
@@ -67,25 +69,30 @@
     'الهيكل الإنشائي ·': 'Structure ·',
     'الواجهة ·': 'Facade ·',
     'السطح الأخضر ·': 'Green roof ·',
-    'الشريك الأول': 'Partner one',
-    'الشريك الثاني': 'Partner two',
-    'الشريك الثالث': 'Partner three',
+    'م. لين الترزي': 'Eng. Leen Al‑Tarzi',
+    'م. سدره القولي': 'Eng. Sidra Al‑Kouli',
+    'م. جودي الحسن': 'Eng. Joudi Al‑Hassan',
 
     // ---- home: about
-    'رؤيتنا': 'Our vision',
-    'أن نكون الخيار الأول في تقديم حلول هندسية مبتكرة ومستدامة تصنع قيمة حقيقية لعملائنا وللمجتمع.': 'To be the first choice for innovative, sustainable engineering solutions that create real value for our clients and for society.',
     'رسالتنا': 'Our mission',
-    'نقدّم خدمات هندسية متكاملة بأعلى معايير الجودة والاحترافية، نحو تصاميم تنسجم فيها الوظيفة والجمال والاستدامة.': 'We deliver integrated engineering services to the highest standards of quality and professionalism — designs where function, beauty and sustainability work as one.',
+    'ترجمة الأفكار إلى واقع ضمن أكاديمية هندسية وفنية.': 'Turning ideas into reality, within an engineering and artistic discipline.',
+    'ما نقدّمه': 'What we offer',
+    'استشارات هندسية وفنية': 'Engineering & technical consulting',
+    'رأي مدروس قبل أول خط.': 'Considered advice before the first line.',
+    'تصميم جميل وواقعي': 'Beautiful, buildable design',
+    'فكرة تُبهر، وتُبنى كما رُسمت.': 'An idea that impresses — and is built as drawn.',
+    'تنفيذ ضمن معايير الجودة': 'Construction to quality standards',
+    'إشراف دقيق حتى التسليم.': 'Careful supervision through to handover.',
+    'الإخلاص': 'Sincerity',
+    'نمنح كل مشروع اهتمامنا كاملاً.': 'Every project gets our full attention.',
+    'الأمانة': 'Trust',
+    'وضوح وشفافية في كل خطوة.': 'Clarity and transparency at every step.',
+    'الالتزام': 'Commitment',
+    'بالوقت والجودة وما اتفقنا عليه.': 'To time, to quality, to what we agreed.',
+    'المتابعة والتقييم المهني': 'Follow-up & professional review',
+    'نراجع العمل ونقيّمه حتى التسليم.': 'We review and assess the work until handover.',
     'قيمنا': 'Our values',
     'أ': 'A', 'ب': 'B', 'ج': 'C', 'د': 'D',
-    'العمل الجماعي': 'Teamwork',
-    'نعمل بروح فريق واحد لتحقيق الأفضل.': 'We work as one team to achieve the best.',
-    'المصداقية': 'Integrity',
-    'نؤمن بالشفافية وبناء الثقة.': 'We believe in transparency and in building trust.',
-    'الابتكار': 'Innovation',
-    'نبتكر حلولاً هندسية مستدامة وعصرية.': 'We create sustainable, contemporary engineering solutions.',
-    'الاحترافية': 'Professionalism',
-    'نلتزم بأعلى معايير الجودة والدقة.': 'We hold ourselves to the highest standards of quality and precision.',
 
     // ---- home: services
     'ثلاث خدمات،': 'Three services,',
@@ -106,6 +113,8 @@
     'ضبط الجودة والتسليم': 'Quality control and handover',
     'لديك مشروع؟': 'Have a project?',
     'لنبدأ من الموقع.': 'Let’s start on site.',
+    'شاركنا موقع الأرض وفكرتك، ونرسم معك الخطوة الأولى.': 'Share your plot and your idea — we’ll draw the first step with you.',
+    'موقع مشروعك': 'Your site',
 
     // ---- home: projects
     'من الفكرة،': 'From idea,',
@@ -145,15 +154,32 @@
     // ---- team
     'الفريق | روند RAWAND — Architecture & Planning': 'Team | RAWAND — Architecture & Planning',
     'فريق روند: ثلاثة شركاء، لكل منهم محوره — الوظيفة والجمال والاستدامة — ورؤية واحدة.': 'The RAWAND team: three partners, each with an axis — function, beauty and sustainability — and one vision.',
-    'ثلاثة عقول،': 'Three minds,',
-    'رؤية واحدة.': 'one vision.',
-    '١': '1', '٢': '2', '٣': '3',
-    'العمارة والتصميم الإنشائي': 'Architecture and structural design',
-    'وضوح المخطط ومنطق الإنشاء أولاً: كل مساحة تؤدي وظيفتها قبل أي شيء، وكل خط في مكانه لسبب.': 'Clear plans and structural logic first: every space does its job before anything else, and every line is there for a reason.',
-    'الواجهات والتصميم الداخلي': 'Facades and interior design',
-    'عين على التفاصيل والمواد والضوء، لتكون العمارة جميلة بقدر ما هي عملية.': 'An eye for detail, material and light, so the architecture is as beautiful as it is practical.',
-    'الاستدامة والتخطيط': 'Sustainability and planning',
-    'حلول تحترم المناخ والموارد: ظلّ، وتهوية طبيعية، ومساحات خضراء تعيش طويلاً.': 'Solutions that respect climate and resources: shade, natural ventilation and green spaces that last.',
+    'المهندسة': 'Eng.',
+    'لين بسام الترزي': 'Leen Bassam Al‑Tarzi',
+    'سدره حامد القولي': 'Sidra Hamed Al‑Kouli',
+    'جودي محمد الحسن': 'Joudi Mohammad Al‑Hassan',
+    'لين الترزي': 'Leen Al‑Tarzi',
+    'سدره القولي': 'Sidra Al‑Kouli',
+    'جودي الحسن': 'Joudi Al‑Hassan',
+    'المؤسِّسة': 'Founder',
+    'شريكة مالكة': 'Co-owner',
+    'مؤسِّسة مكتب روند للاستشارات والأعمال الهندسية': 'Founder of RAWAND Engineering Consultancy & Works',
+    'إحدى مالكات مكتب روند للاستشارات والأعمال الهندسية': 'Co-owner of RAWAND Engineering Consultancy & Works',
+    'إجازة في الهندسة المعمارية': 'Bachelor’s degree in Architecture',
+    'عضوة في نقابة المهندسين السوريين': 'Member of the Syrian Engineers Association',
+    'المستوى الثاني في إعداد القيادات النسائية — برنامج رفعة، وزارة الخارجية السورية': 'Women’s Leadership Development, level two — Rif’a programme, Syrian Ministry of Foreign Affairs',
+    'خبرة في الإشراف على التنفيذ في المشاريع الهندسية': 'Experience supervising construction on engineering projects',
+    'خبرة في توظيف الذكاء الاصطناعي في المشاريع الهندسية': 'Experience applying AI in engineering projects',
+    'المهندسات': 'The engineers',
+    'المؤهلات': 'Qualifications',
+    'المهارات': 'Skills',
+    'اللغات': 'Languages',
+    'التواصل': 'Contact',
+    'اللغة الأم': 'Native',
+    'لغة إضافية': 'Additional',
+    'العربية': 'Arabic',
+    'الإنكليزية': 'English',
+    'جيدة': 'Good',
     'ثلاثة محاور…': 'Three axes…',
     'ومشروعك يُكمل الشبكة.': 'and your project completes the grid.',
     'شاهد مشاريعنا': 'See our projects',
@@ -210,16 +236,16 @@
 
   // blocks whose inline markup doesn't line up word for word with the Arabic
   const RICH = {
-    '.about-statement': 'RAWAND is an architecture and planning studio in Riyadh that brings <em>three partners</em> together around one idea: a good building is born when <em>function, beauty and sustainability</em> are in balance. We stay with every project from the first consultation, through design, to construction.',
+    '.about-statement': 'A team that brings together <em>a select group of ambitious Syrian engineers.</em>',
   };
 
   // the small line under these headings shows the Arabic original in English mode
   const PAIRS = [
     ['.svc-heading', '.svc-heading-en'],
+    ['.cta-title', '.cta-en'],
     ['.prj-heading', '.prj-heading-en'],
     ['.prj-next-title', '.prj-next-en'],
     ['.contact-heading', '.contact-heading-en'],
-    ['.team-title', '.team-title-en'],
   ];
 
   const norm = s => s.replace(/\s+/g, ' ').trim();

@@ -150,20 +150,6 @@
   .svc-sheet:hover .svc-foot svg { transform: translateX(-5px); }
 }
 
-/* ------------------------------------------------------------ closing line */
-.svc-cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-top: clamp(64px, 11svh, 120px);
-  padding-top: 32px;
-  border-top: 1px solid rgba(91, 15, 26, .2);
-}
-.svc-cta p { margin: 0; font: 800 clamp(1.3rem, 2.2vw, 2rem)/1.4 var(--font-ar); color: var(--rw-900); }
-.svc-cta p span { color: var(--rw-700); }
-
 /* ------------------------------------------------------------ responsive */
 @media (max-width: 1080px) and (min-width: 901px) {
   .svc-body { padding-inline: 18px; }
@@ -195,5 +181,4 @@
 @media (max-width: 560px) {
   .svc-body { padding-inline: 18px; }
   .svc-figure, .svc-foot { margin-inline: 18px; }
-  .svc-cta .btn { width: 100%; justify-content: center; }
 }

@@ -1,7 +1,7 @@
 /* =====================================================================
    RAWAND — Team page (الفريق) · sheet A-05
-   Three partners, each drawn as a line portrait on one of three structural axes (١ ٢ ٣):
-     load   → axes are set out, bubbles pop, the three portraits are plotted line by line
+   Three partners, each drawn as a line portrait on one of three structural axes:
+     load   → axes are set out, the three portraits are plotted line by line
      scroll → (pinned) the camera walks to each partner; a scan line inks her portrait in
               the brand tones and her card appears; then all three stand together again
      hover  → a lens shows the real photograph under the drawing
@@ -29,12 +29,11 @@
   /* ------------------------------------------------------------ the three figures, in head units (u) */
 
   const SPACING = 3.1;                 // distance between axes
-  const BUBBLE_Y = -1.05;              // axis bubbles above the heads
+  const AXIS_TOP = -1.05;              // the axes start above the heads
   const FADE = [4.2, 5.15];            // the drawings dissolve into the paper here
   const PENCIL = [158, 74, 82];        // --rw-500
   const INK = [91, 15, 26];            // --rw-900
   const EN = window.RW_LANG === 'en';
-  const NUMS = EN ? ['1', '2', '3'] : ['١', '٢', '٣'];
 
   function parsePaths(str, kind, toW) {
     return (str ? str.split('|') : []).map(s => {
@@ -80,14 +79,14 @@
   const scene = {
     x0: Math.min(...figs.map(f => f.X - f.lext)),
     x1: Math.max(...figs.map(f => f.X + f.rext)),
-    y0: BUBBLE_Y - .3,
+    y0: AXIS_TOP - .3,
     y1: FADE[1],
   };
 
   /* ------------------------------------------------------------ state */
 
   const st = {
-    axes: 0, bub: 0, tags: 0, zoom: 0, focus: 0,
+    axes: 0, tags: 0, zoom: 0, focus: 0,
     draw: [0, 0, 0], ink: [0, 0, 0], emph: [1, 1, 1], card: [0, 0, 0],
   };
   const lens = { a: 0, x: 0, y: 0, on: false, fig: -1 };
@@ -108,8 +107,8 @@
     const t = document.createElement('div');
     t.className = 'member-tag';
     t.innerHTML = `<b></b><span></span>`;
-    t.querySelector('b').textContent = names[i].textContent;
-    t.querySelector('span').textContent = $('.member-axis', c).childNodes[1].textContent.trim();
+    t.querySelector('b').textContent = $('.member-short', c).textContent.trim();
+    t.querySelector('span').textContent = $('.member-tagline', c).textContent.trim();
     $('.team-tags', root).appendChild(t);
     return t;
   });
@@ -257,7 +256,7 @@
     figs.forEach((f, i) => {
       const a = clamp(st.axes * 1.2 - i * .1);
       if (a <= 0) return;
-      const [x, ya] = cam.toS(f.X, BUBBLE_Y + .25);
+      const [x, ya] = cam.toS(f.X, AXIS_TOP + .25);
       const yb = cam.toS(f.X, -.14)[1];
       const yc = cam.toS(f.X, FADE[0] + .35)[1];
       const yd = cam.toS(f.X, FADE[1] + .35)[1];
@@ -303,29 +302,6 @@
       vg.addColorStop(1, `rgba(245, 243, 240, ${.94 * veil})`);
       ctx.fillStyle = vg;
       ctx.fillRect(x0, 0, w - x0, h);
-    }
-
-    // axis bubbles ١ ٢ ٣ — filled once that partner is inked
-    if (st.bub > 0) {
-      figs.forEach((f, i) => {
-        const [x, y] = cam.toS(f.X, BUBBLE_Y);
-        const r = clamp(.2 * cam.S, 12, 22) * st.bub;
-        const on = st.ink[i];
-        ctx.globalAlpha = .45 + .55 * st.emph[i];
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = on > .5 ? '#7A1E29' : '#F5F3F0';
-        ctx.fill();
-        ctx.strokeStyle = on > .5 ? '#7A1E29' : rgba(PENCIL, 1);
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.fillStyle = on > .5 ? '#F5F3F0' : '#5B0F1A';
-        ctx.font = `700 ${Math.round(r * 1.05)}px Cairo, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(NUMS[i], x, y + r * .08);
-      });
-      ctx.globalAlpha = 1;
     }
 
     // leader line from the focused partner to her card (desktop)
@@ -419,22 +395,21 @@
 
   /* ------------------------------------------------------------ timelines */
 
-  // on load: set out the axes, pop the bubbles, plot the three portraits
+  // on load: set out the axes, plot the three portraits
   gsap.set(cards, { autoAlpha: 0, y: 16 });
   const arrived = document.documentElement.dataset.arrive === '1';
   // (arriving through the page transition the drawing starts early: it shows through the logo window)
   gsap.timeline({ delay: arrived ? .45 : .25, onUpdate: mark })
     .from($$('.sheet-rule', root), { scaleX: 0, duration: 1.3, ease: 'power3.inOut' }, 0)
-    .from($$('.sheet-label, .team-title, .team-title-en', root), { opacity: 0, y: 14, duration: .9, stagger: .08, ease: 'power3.out' }, .1)
+    .from($$('.sheet-label', root), { opacity: 0, y: 14, duration: .9, ease: 'power3.out' }, .1)
     .to(st, { axes: 1, duration: 1.3, ease: 'power2.inOut' }, .2)
-    .to(st, { bub: 1, duration: .7, ease: 'back.out(2.2)' }, .85)
     .to(st.draw, { 0: 1, duration: 3.4, ease: 'power1.inOut' }, 1.0)
     .to(st.draw, { 1: 1, duration: 3.4, ease: 'power1.inOut' }, 1.35)
     .to(st.draw, { 2: 1, duration: 3.4, ease: 'power1.inOut' }, 1.7)
     .to(st, { tags: 1, duration: .9, ease: 'power1.out' }, 3.9)
     .to('.team-scroll > *', { opacity: 1, duration: .8 }, 4.3);
 
-  // on scroll: walk ١ → ٢ → ٣, inking each one, then all three together
+  // on scroll: walk from one partner to the next, inking each one, then all three together
   const tl = gsap.timeline({
     defaults: { ease: 'power2.inOut' },
     onUpdate: mark,
@@ -469,6 +444,14 @@
     c.style.pointerEvents = 'auto';
     c.addEventListener('pointerenter', () => { ptr.overUI = true; mark(); });
     c.addEventListener('pointerleave', () => { ptr.overUI = false; mark(); });
+  });
+
+  // the partners' sheets: each title block is ruled in, then its rows fill
+  $$('.profile').forEach((pf, i) => {
+    gsap.timeline({ scrollTrigger: { trigger: pf, start: 'top 86%' }, delay: i * .12 })
+      .from(pf, { clipPath: 'inset(0 0 100% 0)', duration: 1, ease: 'power3.inOut', clearProps: 'clipPath' })
+      .from(pf.querySelectorAll('.profile-head > *'), { opacity: 0, y: 12, duration: .6, stagger: .08, ease: 'power3.out' }, .45)
+      .from(pf.querySelectorAll('.profile-row'), { opacity: 0, x: EN ? -14 : 14, duration: .6, stagger: .08, ease: 'power3.out' }, .6);
   });
 
   /* ------------------------------------------------------------ loop */

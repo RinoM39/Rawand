@@ -631,9 +631,4 @@
     const link = svc.querySelector('.svc-link');
     if (link) tl.from(link, { [sideBySide ? 'scaleX' : 'scaleY']: 0, duration: .8, ease: 'power3.inOut' }, 1.2);
   });
-
-  gsap.from(q('.svc-cta > *'), {
-    opacity: 0, y: 20, duration: .9, stagger: .1, ease: 'power3.out',
-    scrollTrigger: { trigger: q('.svc-cta')[0], start: 'top 88%' },
-  });
 })();

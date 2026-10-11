@@ -122,12 +122,12 @@
     .to(mark.ink[1].pen, { attr: { 'stroke-dashoffset': 0 }, duration: .55, ease: 'power1.inOut' }, .45)
     .to(mark.ink[2].pen, { attr: { 'stroke-dashoffset': 0 }, duration: .45, ease: 'power1.inOut' }, .55);
 
-  // vision / mission: dimension lines open out from the label
+  // mission / what we offer: dimension lines open out from the label
   q('.pillar').forEach(p => {
     gsap.timeline({ scrollTrigger: { trigger: p, start: 'top 82%' } })
       .from(p.querySelectorAll('.dim-line'), { scaleX: 0, duration: 1.1, ease: 'power3.inOut' })
       .from(p.querySelector('.dim-label'), { opacity: 0, y: 8, duration: .6, ease: 'power3.out' }, .2)
-      .from(p.querySelector('p'), { opacity: 0, y: 18, duration: .9, ease: 'power3.out' }, .45);
+      .from(p.querySelectorAll(':scope > p, .offer-list li'), { opacity: 0, y: 18, duration: .9, stagger: .12, ease: 'power3.out' }, .45);
   });
 
   // values: the structural grid is set out (lines, then axis bubbles), then the text

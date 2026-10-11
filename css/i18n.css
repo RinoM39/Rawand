@@ -26,7 +26,7 @@ html[lang="en"] { --font-ar: 'Montserrat', 'Cairo', system-ui, sans-serif; }
 /* ------------------------------------------------------------ English: the type */
 /* small labels that only repeated the Arabic in English are hidden … */
 html[lang="en"] :is(.tag-en, .svc-en, .prj-en, .value-en, .dim small, .values-title small,
-  .prj-cat > span[lang="en"], .member-axis > span[lang="en"], .contact-channels dt > span[lang="en"]) { display: none; }
+  .prj-cat > span[lang="en"], .contact-channels dt > span[lang="en"]) { display: none; }
 /* … and the accent line under a heading carries the Arabic original */
 .is-accent-ar {
   font-family: 'Cairo', system-ui, sans-serif !important;
@@ -36,8 +36,8 @@ html[lang="en"] :is(.tag-en, .svc-en, .prj-en, .value-en, .dim small, .values-ti
   text-transform: none;
   text-align: left !important;
 }
-html[lang="en"] :is(.about-statement, .pillar p, .svc-lead, .prj-lead-text, .contact-lead, .member-bio) { line-height: 1.7; }
-html[lang="en"] :is(.svc-heading, .prj-heading, .contact-heading, .team-title, .foot-title, .member-name, .prj-next-title) { letter-spacing: -.02em; }
+html[lang="en"] :is(.about-statement, .pillar p, .svc-lead, .prj-lead-text, .contact-lead, .member-facts li) { line-height: 1.7; }
+html[lang="en"] :is(.svc-heading, .prj-heading, .contact-heading, .foot-title, .member-name, .prj-next-title) { letter-spacing: -.02em; }
 
 /* ------------------------------------------------------------ mirror: lines are drawn from the left */
 [dir="ltr"] .nav-links a::after,
@@ -66,3 +66,13 @@ html[lang="en"] :is(.svc-heading, .prj-heading, .contact-heading, .team-title, .
 [dir="ltr"] .prj-phases::before { right: calc(33.333% - 5px); left: 5px; }
 [dir="ltr"] .phases::before { right: calc(33.333% - 6px); left: 6px; }
 [dir="ltr"] .prj-film { right: auto; left: 12px; }
+
+/* team: ticks and table columns mirror */
+html[dir="ltr"] .member-facts li { padding: 9px 0 9px 22px; }
+html[dir="ltr"] .member-facts li::before { right: auto; left: 2px; transform: rotate(45deg); }
+html[dir="ltr"] .profile-row dt { border-left: 0; border-right: 1px solid rgba(91, 15, 26, .16); }
+html[dir="ltr"] .profile::before { right: auto; left: -6px; border-width: 1px 0 0 1px; }
+html[dir="ltr"] .profile::after { left: auto; right: -6px; border-width: 0 1px 1px 0; }
+html[lang="en"] :is(.profile-facts li, .profile-langs li) { line-height: 1.6; }
+html[lang="en"] .profile-row { grid-template-columns: 112px minmax(0, 1fr); }
+html[lang="en"] .profile-name { font-size: clamp(1.2rem, 1.65vw, 1.6rem); }

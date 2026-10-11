@@ -12,13 +12,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=Montserrat:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="css/hero.css?v=4">
-  <link rel="stylesheet" href="css/team.css?v=4">
+  <link rel="stylesheet" href="css/team.css?v=6">
   <link rel="stylesheet" href="css/site.css?v=7">
   <link rel="stylesheet" href="css/transition.css?v=6">
-  <link rel="stylesheet" href="css/i18n.css?v=1">
+  <link rel="stylesheet" href="css/i18n.css?v=3">
   <!-- language (?lang=en|ar, remembered) and whether the page was opened from inside the site
        (js/transition.js) — set before anything is drawn -->
-  <script>(function(){var d=document.documentElement,l=null;try{var q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='ar')localStorage.setItem('rw-lang',q);l=localStorage.getItem('rw-lang')||q}catch(e){}if(l==='en'){d.lang='en';d.dir='ltr'}try{if(sessionStorage.getItem('rw-pt')){sessionStorage.removeItem('rw-pt');d.dataset.arrive='1'}}catch(e){}})();</script>
+  <script>(function(){var d=document.documentElement,l=null;try{var q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='ar')localStorage.setItem('rw-lang',q);l=localStorage.getItem('rw-lang')||q}catch(e){}if(l==='en'){d.lang='en';d.dir='ltr'}if(q){if(document.referrer.indexOf(location.origin+'/')===0)d.dataset.arrive='1';try{var u=new URL(location.href);u.searchParams.delete('lang');history.replaceState(null,'',u.pathname+u.search+u.hash)}catch(e){}}try{if(sessionStorage.getItem('rw-pt')){sessionStorage.removeItem('rw-pt');d.dataset.arrive='1'}}catch(e){}})();</script>
   <link rel="preload" as="image" href="assets/team/tone-1.webp">
 </head>
 <body class="page-team">
@@ -46,7 +46,7 @@
   <main id="top">
     <!-- ================= TEAM · sheet A-05 =================
          Three partners drawn as line portraits on three structural axes (canvas, js/team.js).
-         Names, roles and bios below are PLACEHOLDERS — replace them with the team's real details. -->
+         Photos: tone-1 = Joudi, tone-2 = Leen, tone-3 = Sidra. -->
     <section class="team" id="team" aria-labelledby="teamTitle">
       <div class="team-stage">
         <div class="team-paper" aria-hidden="true"></div>
@@ -54,47 +54,85 @@
 
         <div class="team-head">
           <header class="sheet-head">
-            <p class="sheet-label">الفريق</p>
+            <h1 class="sheet-label" id="teamTitle">الفريق</h1>
             <i class="sheet-rule" aria-hidden="true"></i>
           </header>
-          <div class="team-titlebar">
-            <h1 class="team-title" id="teamTitle">ثلاثة عقول، <span>رؤية واحدة.</span></h1>
-            <p class="team-title-en" lang="en" dir="ltr">Three minds. One <em>vision</em>.</p>
-          </div>
         </div>
 
         <ol class="team-list">
           <li class="member">
             <img class="member-img" src="assets/team/tone-1.webp" width="650" height="1100" alt="" loading="lazy">
             <div class="member-card">
-              <p class="member-axis"><span class="member-bubble" aria-hidden="true">١</span>الوظيفة <span lang="en">Function</span></p>
-              <h2 class="member-name">الشريك الأول</h2>
-              <p class="member-role">العمارة والتصميم الإنشائي</p>
-              <p class="member-bio">وضوح المخطط ومنطق الإنشاء أولاً: كل مساحة تؤدي وظيفتها قبل أي شيء، وكل خط في مكانه لسبب.</p>
+              <p class="member-role">إحدى مالكات مكتب روند للاستشارات والأعمال الهندسية</p>
+              <h2 class="member-name"><small>المهندسة</small> جودي محمد الحسن</h2>
+              <ul class="member-facts"><li>إجازة في الهندسة المعمارية</li><li>عضوة في نقابة المهندسين السوريين</li></ul>
+              <span class="member-short" hidden>جودي الحسن</span><span class="member-tagline" hidden>شريكة مالكة</span>
             </div>
           </li>
           <li class="member">
             <img class="member-img" src="assets/team/tone-2.webp" width="601" height="1100" alt="" loading="lazy">
             <div class="member-card">
-              <p class="member-axis"><span class="member-bubble" aria-hidden="true">٢</span>الجمال <span lang="en">Beauty</span></p>
-              <h2 class="member-name">الشريك الثاني</h2>
-              <p class="member-role">الواجهات والتصميم الداخلي</p>
-              <p class="member-bio">عين على التفاصيل والمواد والضوء، لتكون العمارة جميلة بقدر ما هي عملية.</p>
+              <p class="member-role">مؤسِّسة مكتب روند للاستشارات والأعمال الهندسية</p>
+              <h2 class="member-name"><small>المهندسة</small> لين بسام الترزي</h2>
+              <ul class="member-facts"><li>إجازة في الهندسة المعمارية</li><li>عضوة في نقابة المهندسين السوريين</li><li>المستوى الثاني في إعداد القيادات النسائية — برنامج رفعة، وزارة الخارجية السورية</li></ul>
+              <span class="member-short" hidden>لين الترزي</span><span class="member-tagline" hidden>المؤسِّسة</span>
             </div>
           </li>
           <li class="member">
             <img class="member-img" src="assets/team/tone-3.webp" width="862" height="1100" alt="" loading="lazy">
             <div class="member-card">
-              <p class="member-axis"><span class="member-bubble" aria-hidden="true">٣</span>الاستدامة <span lang="en">Sustainability</span></p>
-              <h2 class="member-name">الشريك الثالث</h2>
-              <p class="member-role">الاستدامة والتخطيط</p>
-              <p class="member-bio">حلول تحترم المناخ والموارد: ظلّ، وتهوية طبيعية، ومساحات خضراء تعيش طويلاً.</p>
+              <p class="member-role">إحدى مالكات مكتب روند للاستشارات والأعمال الهندسية</p>
+              <h2 class="member-name"><small>المهندسة</small> سدره حامد القولي</h2>
+              <ul class="member-facts"><li>إجازة في الهندسة المعمارية</li><li>عضوة في نقابة المهندسين السوريين</li></ul>
+              <span class="member-short" hidden>سدره القولي</span><span class="member-tagline" hidden>شريكة مالكة</span>
             </div>
           </li>
         </ol>
 
         <div class="team-tags" aria-hidden="true"></div>
         <div class="hero-scroll team-scroll" aria-hidden="true"><span class="scroll-mouse"></span></div>
+      </div>
+    </section>
+
+    <!-- ================= the three partners' sheets: everything about each one ================= -->
+    <section class="team-profiles" aria-label="المهندسات">
+      <div class="profiles-wrap">
+        <article class="profile">
+          <header class="profile-head">
+            <p class="profile-role">إحدى مالكات مكتب روند للاستشارات والأعمال الهندسية</p>
+            <h3 class="profile-name"><small>المهندسة</small> جودي محمد الحسن</h3>
+          </header>
+          <dl class="profile-block">
+            <div class="profile-row"><dt>المؤهلات</dt><dd><ul class="profile-facts"><li>إجازة في الهندسة المعمارية</li><li>عضوة في نقابة المهندسين السوريين</li></ul></dd></div>
+            <div class="profile-row"><dt>المهارات</dt><dd><ul class="profile-skills"><li lang="en" dir="ltr">Revit</li><li lang="en" dir="ltr">AutoCAD</li><li lang="en" dir="ltr">Photoshop</li><li lang="en" dir="ltr">ICDL</li><li lang="en" dir="ltr">3D Modeling + Render</li><li lang="en" dir="ltr">Parametric Architecture Workshop</li><li lang="en" dir="ltr">AI Applications for Architecture</li></ul></dd></div>
+            <div class="profile-row"><dt>اللغات</dt><dd><ul class="profile-langs"><li><span>اللغة الأم</span> العربية</li><li><span>الإنكليزية</span> جيدة</li></ul></dd></div>
+            <div class="profile-row"><dt>التواصل</dt><dd><ul class="profile-contact"><li><a href="mailto:joudialhassan11@gmail.com" dir="ltr">joudialhassan11@gmail.com</a></li><li><a href="tel:+963947962621" dir="ltr">0947 962 621</a></li></ul></dd></div>
+          </dl>
+        </article>
+        <article class="profile">
+          <header class="profile-head">
+            <p class="profile-role">مؤسِّسة مكتب روند للاستشارات والأعمال الهندسية</p>
+            <h3 class="profile-name"><small>المهندسة</small> لين بسام الترزي</h3>
+          </header>
+          <dl class="profile-block">
+            <div class="profile-row"><dt>المؤهلات</dt><dd><ul class="profile-facts"><li>إجازة في الهندسة المعمارية</li><li>عضوة في نقابة المهندسين السوريين</li><li>المستوى الثاني في إعداد القيادات النسائية — برنامج رفعة، وزارة الخارجية السورية</li></ul></dd></div>
+            <div class="profile-row"><dt>المهارات</dt><dd><ul class="profile-skills"><li class="is-text">خبرة في الإشراف على التنفيذ في المشاريع الهندسية</li><li lang="en" dir="ltr">Revit</li><li lang="en" dir="ltr">AutoCAD</li><li lang="en" dir="ltr">3D Modeling + Render</li><li class="is-text">خبرة في توظيف الذكاء الاصطناعي في المشاريع الهندسية</li></ul></dd></div>
+            <div class="profile-row"><dt>اللغات</dt><dd><ul class="profile-langs"><li><span>اللغة الأم</span> العربية</li><li><span>لغة إضافية</span> الإنكليزية</li></ul></dd></div>
+            <div class="profile-row"><dt>التواصل</dt><dd><ul class="profile-contact"><li><a href="mailto:leentrazeh@gmail.com" dir="ltr">leentrazeh@gmail.com</a></li><li><a href="tel:+963981243329" dir="ltr">0981 243 329</a></li><li><a href="tel:+963939507329" dir="ltr">0939 507 329</a></li></ul></dd></div>
+          </dl>
+        </article>
+        <article class="profile">
+          <header class="profile-head">
+            <p class="profile-role">إحدى مالكات مكتب روند للاستشارات والأعمال الهندسية</p>
+            <h3 class="profile-name"><small>المهندسة</small> سدره حامد القولي</h3>
+          </header>
+          <dl class="profile-block">
+            <div class="profile-row"><dt>المؤهلات</dt><dd><ul class="profile-facts"><li>إجازة في الهندسة المعمارية</li><li>عضوة في نقابة المهندسين السوريين</li></ul></dd></div>
+            <div class="profile-row"><dt>المهارات</dt><dd><ul class="profile-skills"><li lang="en" dir="ltr">Revit</li><li lang="en" dir="ltr">AutoCAD</li><li lang="en" dir="ltr">Photoshop</li><li lang="en" dir="ltr">3D Modeling + Render</li><li lang="en" dir="ltr">Parametric Architecture Workshop</li><li lang="en" dir="ltr">Leveraging AI Skills in Architecture</li></ul></dd></div>
+            <div class="profile-row"><dt>اللغات</dt><dd><ul class="profile-langs"><li><span>اللغة الأم</span> العربية</li><li><span>لغة إضافية</span> الإنكليزية</li></ul></dd></div>
+            <div class="profile-row"><dt>التواصل</dt><dd><ul class="profile-contact"><li><a href="mailto:sidrakoly207@gmail.com" dir="ltr">sidrakoly207@gmail.com</a></li><li><a href="tel:+963951568491" dir="ltr">0951 568 491</a></li><li><a href="tel:+963985791295" dir="ltr">0985 791 295</a></li></ul></dd></div>
+          </dl>
+        </article>
       </div>
     </section>
 
@@ -174,10 +212,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="js/logo-data.js?v=4"></script>
-  <script src="js/i18n.js?v=1"></script>
+  <script src="js/i18n.js?v=3"></script>
   <script src="js/team-data.js?v=4"></script>
   <script src="js/site.js?v=8"></script>
-  <script src="js/team.js?v=7"></script>
-  <script src="js/transition.js?v=6"></script>
+  <script src="js/team.js?v=8"></script>
+  <script src="js/transition.js?v=7"></script>
 </body>
 </html>

@@ -15,10 +15,10 @@
   <link rel="stylesheet" href="css/contact.css?v=6">
   <link rel="stylesheet" href="css/site.css?v=7">
   <link rel="stylesheet" href="css/transition.css?v=6">
-  <link rel="stylesheet" href="css/i18n.css?v=1">
+  <link rel="stylesheet" href="css/i18n.css?v=3">
   <!-- language (?lang=en|ar, remembered) and whether the page was opened from inside the site
        (js/transition.js) — set before anything is drawn -->
-  <script>(function(){var d=document.documentElement,l=null;try{var q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='ar')localStorage.setItem('rw-lang',q);l=localStorage.getItem('rw-lang')||q}catch(e){}if(l==='en'){d.lang='en';d.dir='ltr'}try{if(sessionStorage.getItem('rw-pt')){sessionStorage.removeItem('rw-pt');d.dataset.arrive='1'}}catch(e){}})();</script>
+  <script>(function(){var d=document.documentElement,l=null;try{var q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='ar')localStorage.setItem('rw-lang',q);l=localStorage.getItem('rw-lang')||q}catch(e){}if(l==='en'){d.lang='en';d.dir='ltr'}if(q){if(document.referrer.indexOf(location.origin+'/')===0)d.dataset.arrive='1';try{var u=new URL(location.href);u.searchParams.delete('lang');history.replaceState(null,'',u.pathname+u.search+u.hash)}catch(e){}}try{if(sessionStorage.getItem('rw-pt')){sessionStorage.removeItem('rw-pt');d.dataset.arrive='1'}}catch(e){}})();</script>
 </head>
 <body class="page-contact">
 
@@ -225,9 +225,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="js/logo-data.js?v=4"></script>
-  <script src="js/i18n.js?v=1"></script>
+  <script src="js/i18n.js?v=3"></script>
   <script src="js/site.js?v=8"></script>
   <script src="js/contact.js?v=7"></script>
-  <script src="js/transition.js?v=6"></script>
+  <script src="js/transition.js?v=7"></script>
 </body>
 </html>
