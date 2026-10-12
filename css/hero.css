@@ -203,8 +203,6 @@ a { color: inherit; text-decoration: none; }
   text-transform: uppercase;
   color: var(--rw-500);
 }
-.tag-meta { font: 400 13px/1.4 var(--font-ar); color: var(--rw-ink-soft); white-space: nowrap; }
-.tag-name { font-weight: 700; color: var(--rw-900); }
 
 /* scroll hint: a mouse whose wheel rolls down (a swipe track on touch screens) */
 .hero-scroll {
@@ -340,8 +338,7 @@ a { color: inherit; text-decoration: none; }
   .nav-actions .btn-sm { display: none; }
   .btn { height: 46px; padding-inline: 16px; font-size: 14px; }
   .tag-title { font-size: 14px; }
-  .tag-en, .tag-part { display: none; }
-  .tag-meta { font-size: 12px; }
+  .tag-en { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

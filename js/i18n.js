@@ -63,15 +63,10 @@
     // ---- home: hero
     'روند — ثلاثة عقول، رؤية واحدة': 'RAWAND — Three minds, one vision',
     'فريق روند': 'The RAWAND team',
+    'قيم التصميم': 'Design values',
     'الوظيفة': 'Function',
     'الجمال': 'Beauty',
     'الاستدامة': 'Sustainability',
-    'الهيكل الإنشائي ·': 'Structure ·',
-    'الواجهة ·': 'Facade ·',
-    'السطح الأخضر ·': 'Green roof ·',
-    'م. لين الترزي': 'Eng. Leen Al‑Tarzi',
-    'م. سدره القولي': 'Eng. Sidra Al‑Kouli',
-    'م. جودي الحسن': 'Eng. Joudi Al‑Hassan',
 
     // ---- home: about
     'رسالتنا': 'Our mission',

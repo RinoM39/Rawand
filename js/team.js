@@ -1,7 +1,8 @@
 /* =====================================================================
    RAWAND — Team page (الفريق) · sheet A-05
    Three partners, each drawn as a line portrait on one of three structural axes:
-     load   → axes are set out, the three portraits are plotted line by line
+     load   → axes are set out, then light construction lines (head oval, eye and shoulder lines,
+              head-unit marks), then the three portraits are plotted line by line over them
      scroll → (pinned) the camera walks to each partner; a scan line inks her portrait in
               the brand tones and her card appears; then all three stand together again
      hover  → a lens shows the real photograph under the drawing
@@ -34,13 +35,48 @@
   const PENCIL = [158, 74, 82];        // --rw-500
   const INK = [91, 15, 26];            // --rw-900
   const EN = window.RW_LANG === 'en';
+  const SMALL = Math.min(window.innerWidth, (window.screen && window.screen.width) || 9999) < 760;   // phones: the lighter images
 
-  function parsePaths(str, kind, toW) {
-    return (str ? str.split('|') : []).map(s => {
-      const pts = s.split(' ').map(q => toW(q.split(',').map(Number)));
+  // stroke widths (css px) are drawn in a few steps, so each step is one canvas stroke
+  const LEVELS = [.3, .42, .56, .72, .9, 1.1, 1.32, 1.56, 1.85];
+  const level = w => {
+    let k = 0;
+    while (k < LEVELS.length - 1 && LEVELS[k + 1] <= w + .06) k++;
+    return k;
+  };
+  // per kind: thickest / thinnest (css px) and how long the tapered ends are (head units)
+  const PEN = {
+    sil: w => ({ max: 1.75, min: .9, taper: .1 }),
+    ftr: w => ({ max: .5 + .95 * w, min: .25, taper: .025 + .03 * w }),
+    hat: () => ({ max: .72, min: .3, taper: .05 }),
+  };
+  // one pass of corner cutting: the stored polylines become smooth curves
+  function chaikin(pts) {
+    if (pts.length < 3) return pts;
+    const out = [pts[0]];
+    for (let k = 0; k < pts.length - 1; k++) {
+      const [x0, y0] = pts[k];
+      const [x1, y1] = pts[k + 1];
+      out.push([x0 * .75 + x1 * .25, y0 * .75 + y1 * .25], [x0 * .25 + x1 * .75, y0 * .25 + y1 * .75]);
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
+  }
+  function parsePaths(str, kind, toW, weights) {
+    return (str ? str.split('|') : []).map((s, j) => {
+      const pts = chaikin(s.split(' ').map(q => toW(q.split(',').map(Number))));
       const cum = [0];
       for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]));
-      return { kind, pts, cum, len: cum[cum.length - 1] || 1e-6 };
+      const len = cum[cum.length - 1] || 1e-6;
+      const pen = PEN[kind](weights ? weights[j] : 1);
+      // each segment's width step: full in the middle, thinning to the ends
+      const lv = new Uint8Array(Math.max(1, pts.length - 1));
+      for (let k = 0; k < pts.length - 1; k++) {
+        const m = (cum[k] + cum[k + 1]) / 2;
+        const t = clamp(Math.min(m, len - m) / pen.taper, .3, 1);
+        lv[k] = level(pen.min + (pen.max - pen.min) * t);
+      }
+      return { kind, pts, cum, len, lv };
     });
   }
   // when each path is drawn, as a slice of the figure's 0→1 draw progress
@@ -56,7 +92,21 @@
     const u = d.unit;
     const X = EN ? [-SPACING, 0, SPACING + .8][i] : (1 - i) * SPACING;   // ١ ٢ ٣ in reading order
     const toW = ([x, y]) => [X + (x - d.ax) / u, (y - d.top) / u];
-    const groups = { sil: parsePaths(d.sil, 'sil', toW), ftr: parsePaths(d.ftr, 'ftr', toW), hat: parsePaths(d.hat, 'hat', toW) };
+    const ftrW = d.ftrW ? d.ftrW.split(',').map(v => Number(v) / 10) : null;
+    const groups = { sil: parsePaths(d.sil, 'sil', toW), ftr: parsePaths(d.ftr, 'ftr', toW, ftrW), hat: parsePaths(d.hat, 'hat', toW) };
+    // pupils, filled once the eyes are drawn
+    const dots = (d.dot ? d.dot.split('|') : []).map(q => {
+      const [x, y, r] = q.split(',').map(Number);
+      const [wx, wy] = toW([x, y]);
+      return { x: wx, y: wy, r: r / u };
+    });
+    // construction lines, in world units
+    const c = d.con;
+    const con = c && {
+      head: { x: toW([c.head[0], 0])[0], y: toW([0, c.head[1]])[1], rx: c.head[2] / u, ry: c.head[3] / u, rot: c.head[4] * Math.PI / 180 },
+      eye: [toW([c.eye[0], c.eye[1]]), toW([c.eye[2], c.eye[3]])],
+      sh: [toW([c.sh[0], c.sh[1]]), toW([c.sh[2], c.sh[3]])],
+    };
     schedule(groups.sil, 0, .5, .5);
     schedule(groups.ftr, .18, .86, .16);
     schedule(groups.hat, .5, 1, .12);
@@ -64,11 +114,11 @@
       const im = new Image();
       im.decoding = 'async';
       im.onload = mark;
-      im.src = `assets/team/${kind}-${i + 1}.webp`;
+      im.src = `assets/team/${kind}-${i + 1}${SMALL ? '-s' : ''}.webp?v=2`;
       return im;
     };
     return {
-      X, groups,
+      X, groups, dots, con,
       lext: d.ax / u,
       rext: (d.w - d.ax) / u,
       box: { x: X - d.ax / u, y: -d.top / u, w: d.w / u, h: d.h / u },
@@ -87,7 +137,7 @@
 
   const st = {
     axes: 0, tags: 0, zoom: 0, focus: 0,
-    draw: [0, 0, 0], ink: [0, 0, 0], emph: [1, 1, 1], card: [0, 0, 0],
+    draw: [0, 0, 0], con: [0, 0, 0], ink: [0, 0, 0], emph: [1, 1, 1], card: [0, 0, 0],
   };
   const lens = { a: 0, x: 0, y: 0, on: false, fig: -1 };
   const ptr = { x: 0, y: 0, in: false };
@@ -168,17 +218,77 @@
 
   /* ------------------------------------------------------------ drawing */
 
-  function tracePart(c, p, t) {
+  // add the drawn part (0..t) of a path to the per-width paths
+  function tracePart(bins, p, t) {
     const pts = p.pts;
     const stop = t * p.len;
-    c.moveTo(pts[0][0], pts[0][1]);
-    for (let k = 1; k < pts.length; k++) {
-      if (p.cum[k] <= stop) { c.lineTo(pts[k][0], pts[k][1]); continue; }
-      const s = (stop - p.cum[k - 1]) / (p.cum[k] - p.cum[k - 1]);
-      c.lineTo(mix(pts[k - 1][0], pts[k][0], s), mix(pts[k - 1][1], pts[k][1], s));
-      break;
+    let cur = -1;
+    for (let k = 0; k < pts.length - 1; k++) {
+      if (p.cum[k] >= stop) break;
+      const L = p.lv[k];
+      const bin = bins[L] || (bins[L] = new Path2D());
+      if (L !== cur) { bin.moveTo(pts[k][0], pts[k][1]); cur = L; }
+      if (p.cum[k + 1] <= stop) bin.lineTo(pts[k + 1][0], pts[k + 1][1]);
+      else {
+        const s = (stop - p.cum[k]) / (p.cum[k + 1] - p.cum[k]);
+        bin.lineTo(mix(pts[k][0], pts[k + 1][0], s), mix(pts[k][1], pts[k + 1][1], s));
+      }
     }
   }
+
+  // the architect's set-out: head oval, eye line, shoulder line, head-unit marks on the axis
+  function drawConstruction(c, f, i, px) {
+    const k = f.con;
+    const t = st.con[i];
+    const a = .5 * t * (1 - st.ink[i]) * (.25 + .75 * st.emph[i]) * (1 - .5 * st.draw[i]);   // steps back once the portrait is drawn
+    if (!k || a <= .01) return;
+    const seg = (t0, t1) => clamp((t - t0) / (t1 - t0));
+    c.save();
+    c.strokeStyle = rgba(PENCIL, a);
+    c.fillStyle = rgba(PENCIL, a);
+    c.lineWidth = .75 * px;
+    c.beginPath();
+    // head oval, drawn round from the top
+    const h = k.head;
+    const oh = seg(0, .45);
+    if (oh > 0) {
+      c.moveTo(h.x + h.ry * Math.sin(h.rot), h.y - h.ry * Math.cos(h.rot));
+      c.ellipse(h.x, h.y, h.rx, h.ry, h.rot, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * oh);
+    }
+    // a line, run out past both ends, drawn from the axis outwards
+    const line = ([x0, y0], [x1, y1], over, tt) => {
+      if (tt <= 0) return;
+      const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy);
+      const ux = dx / L, uy = dy / L;
+      const ax = x0 - ux * over, ay = y0 - uy * over, bx = x1 + ux * over, by = y1 + uy * over;
+      const mx = (ax + bx) / 2, my = (ay + by) / 2;
+      c.moveTo(mix(mx, ax, tt), mix(my, ay, tt));
+      c.lineTo(mix(mx, bx, tt), mix(my, by, tt));
+    };
+    line(k.eye[0], k.eye[1], h.rx * .85, seg(.25, .6));
+    line(k.sh[0], k.sh[1], .14, seg(.4, .85));
+    // head units down the axis
+    for (let u = 0; u <= 4; u++) {
+      const tu = seg(.15 + u * .1, .3 + u * .1);
+      if (tu <= 0) continue;
+      const w = (u === 0 || u === 1 ? .16 : .1) * tu;
+      c.moveTo(f.X - w, u);
+      c.lineTo(f.X + w, u);
+    }
+    c.stroke();
+    // shoulder joints
+    const tj = seg(.8, 1);
+    if (tj > 0) {
+      c.beginPath();
+      for (const [x, y] of k.sh) {
+        c.moveTo(x + .04 * tj, y);
+        c.arc(x, y, .04 * tj, 0, Math.PI * 2);
+      }
+      c.stroke();
+    }
+    c.restore();
+  }
+
   const rgba = (c, a) => `rgba(${c[0] | 0}, ${c[1] | 0}, ${c[2] | 0}, ${a})`;
 
   function drawFigure(c, f, i, cam) {
@@ -187,6 +297,8 @@
     const draw = st.draw[i];
     const px = 1 / cam.S;
     const b = f.box;
+
+    drawConstruction(c, f, i, px);
 
     // the toned portrait, revealed under a scan line running down the sheet
     if (ink > 0 && f.tone.naturalWidth) {
@@ -217,17 +329,31 @@
 
     // the line drawing: pencil while sketched, burgundy ink once inked; hatching gives way to the tone
     const col = PENCIL.map((v, k) => mix(v, INK[k], ink));
-    const kinds = [['sil', 1.5, 1], ['ftr', 1.05, 1 - .25 * ink], ['hat', .6, .7 * (1 - .8 * ink)]];
-    for (const [kind, w, a] of kinds) {
+    const kinds = [['sil', 1], ['ftr', 1 - .25 * ink], ['hat', .7 * (1 - .8 * ink)]];
+    for (const [kind, a] of kinds) {
       if (a <= .01) continue;
-      c.beginPath();
+      const bins = [];
       for (const p of f.groups[kind]) {
         const t = clamp((draw - p.t0) / (p.t1 - p.t0));
-        if (t > 0) tracePart(c, p, t);
+        if (t > 0) tracePart(bins, p, t);
       }
-      c.lineWidth = w * px;
       c.strokeStyle = rgba(col, a * e);
-      c.stroke();
+      bins.forEach((path, L) => {
+        if (!path) return;
+        c.lineWidth = LEVELS[L] * px;
+        c.stroke(path);
+      });
+    }
+    // pupils
+    const pd = clamp((draw - .5) / .12);
+    if (pd > 0 && f.dots.length) {
+      c.fillStyle = rgba(col, pd * e);
+      c.beginPath();
+      for (const d of f.dots) {
+        c.moveTo(d.x + d.r, d.y);
+        c.arc(d.x, d.y, d.r * (.4 + .6 * pd), 0, Math.PI * 2);
+      }
+      c.fill();
     }
 
     // the lens: inside it, the photograph
@@ -395,7 +521,7 @@
 
   /* ------------------------------------------------------------ timelines */
 
-  // on load: set out the axes, plot the three portraits
+  // on load: set out the axes and the construction lines, then plot the three portraits over them
   gsap.set(cards, { autoAlpha: 0, y: 16 });
   const arrived = document.documentElement.dataset.arrive === '1';
   // (arriving through the page transition the drawing starts early: it shows through the logo window)
@@ -403,11 +529,14 @@
     .from($$('.sheet-rule', root), { scaleX: 0, duration: 1.3, ease: 'power3.inOut' }, 0)
     .from($$('.sheet-label', root), { opacity: 0, y: 14, duration: .9, ease: 'power3.out' }, .1)
     .to(st, { axes: 1, duration: 1.3, ease: 'power2.inOut' }, .2)
-    .to(st.draw, { 0: 1, duration: 3.4, ease: 'power1.inOut' }, 1.0)
-    .to(st.draw, { 1: 1, duration: 3.4, ease: 'power1.inOut' }, 1.35)
-    .to(st.draw, { 2: 1, duration: 3.4, ease: 'power1.inOut' }, 1.7)
-    .to(st, { tags: 1, duration: .9, ease: 'power1.out' }, 3.9)
-    .to('.team-scroll > *', { opacity: 1, duration: .8 }, 4.3);
+    .to(st.con, { 0: 1, duration: 1.5, ease: 'power1.inOut' }, .55)
+    .to(st.con, { 1: 1, duration: 1.5, ease: 'power1.inOut' }, .75)
+    .to(st.con, { 2: 1, duration: 1.5, ease: 'power1.inOut' }, .95)
+    .to(st.draw, { 0: 1, duration: 3.4, ease: 'power1.inOut' }, 1.35)
+    .to(st.draw, { 1: 1, duration: 3.4, ease: 'power1.inOut' }, 1.7)
+    .to(st.draw, { 2: 1, duration: 3.4, ease: 'power1.inOut' }, 2.05)
+    .to(st, { tags: 1, duration: .9, ease: 'power1.out' }, 4.2)
+    .to('.team-scroll > *', { opacity: 1, duration: .8 }, 4.6);
 
   // on scroll: walk from one partner to the next, inking each one, then all three together
   const tl = gsap.timeline({

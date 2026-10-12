@@ -180,7 +180,7 @@
 
   // Where the drawing sits: centred at rest; when exploded it shifts left a little to make room for the labels.
   const layoutFn = (w, h) => (w < 900
-    ? { rest: { cx: w * .5, cy: h * .52, w: w * .84, h: h * .5 }, exp: { cx: w * .31, cy: h * .54, w: w * .56, h: h * .74 } }
+    ? { rest: { cx: w * .5, cy: h * .52, w: w * .84, h: h * .5 }, exp: { cx: w * .345, cy: h * .54, w: w * .5, h: h * .7 } }
     : { rest: { cx: w * .5, cy: h * .53, w: w * .46, h: h * .64 }, exp: { cx: w * .44, cy: h * .53, w: w * .48, h: h * .78 } });
 
   const axo = window.RawandAxo.create($('#heroCanvas'), layoutFn);
