@@ -1,10 +1,12 @@
 /* =====================================================================
    RAWAND — Team page (الفريق) · sheet A-05
-   Three partners, each drawn as a line portrait on one of three structural axes:
+   Three partners, each drawn as an ink portrait on one of three structural axes:
      load   → axes are set out, then light construction lines (head oval, eye and shoulder lines,
-              head-unit marks), then the three portraits are plotted line by line over them
-     scroll → (pinned) the camera walks to each partner; a scan line inks her portrait in
-              the brand tones and her card appears; then all three stand together again
+              head-unit marks), then each portrait is plotted over them — outline and folds in pen,
+              the face feature by feature (brows, eyes, nose, mouth) — and its wash soaks in from the face
+     scroll → (pinned) the camera closes in on each partner's head and shoulders; a scan line turns her
+              drawing into her photograph in the brand tones and her card appears; then all three
+              stand together again
      hover  → a lens shows the real photograph under the drawing
    Needs: js/team-data.js (generated from the photos), gsap + ScrollTrigger; the nav and smooth
    scroll come from js/site.js.
@@ -34,50 +36,79 @@
   const FADE = [4.2, 5.15];            // the drawings dissolve into the paper here
   const PENCIL = [158, 74, 82];        // --rw-500
   const INK = [91, 15, 26];            // --rw-900
+  const REST = [124, 42, 52];          // between the two: the drawing at rest
   const EN = window.RW_LANG === 'en';
   const SMALL = Math.min(window.innerWidth, (window.screen && window.screen.width) || 9999) < 760;   // phones: the lighter images
 
-  // stroke widths (css px) are drawn in a few steps, so each step is one canvas stroke
-  const LEVELS = [.3, .42, .56, .72, .9, 1.1, 1.32, 1.56, 1.85];
-  const level = w => {
-    let k = 0;
-    while (k < LEVELS.length - 1 && LEVELS[k + 1] <= w + .06) k++;
-    return k;
-  };
-  // per kind: thickest / thinnest (css px) and how long the tapered ends are (head units)
-  const PEN = {
-    sil: w => ({ max: 1.75, min: .9, taper: .1 }),
-    ftr: w => ({ max: .5 + .95 * w, min: .25, taper: .025 + .03 * w }),
-    hat: () => ({ max: .72, min: .3, taper: .05 }),
-  };
-  // one pass of corner cutting: the stored polylines become smooth curves
+  // pen widths (css px at the resting scale), one step per digit in the data; each step is one canvas stroke
+  const LEVELS = [.26, .34, .44, .56, .7, .86, 1.04, 1.24, 1.48, 1.78];
+  const S_REF = 110;                   // px per head unit at which the pen widths are set
+  // fine detail (brow hairs, lid creases, hatching) comes in as the camera closes in
+  const LOD = [150, 240];
+  const smooth01 = t => t * t * (3 - 2 * t);
+  // one pass of corner cutting: the stored polylines become smooth curves (a width rides along as a 3rd value)
   function chaikin(pts) {
     if (pts.length < 3) return pts;
     const out = [pts[0]];
     for (let k = 0; k < pts.length - 1; k++) {
-      const [x0, y0] = pts[k];
-      const [x1, y1] = pts[k + 1];
-      out.push([x0 * .75 + x1 * .25, y0 * .75 + y1 * .25], [x0 * .25 + x1 * .75, y0 * .25 + y1 * .75]);
+      const a = pts[k];
+      const b = pts[k + 1];
+      out.push(a.map((v, j) => v * .75 + b[j] * .25), a.map((v, j) => v * .25 + b[j] * .75));
     }
     out.push(pts[pts.length - 1]);
     return out;
   }
-  function parsePaths(str, kind, toW, weights) {
+  // pen paths: per-point width steps (digits) or one fixed step, tapered at the ends
+  function parsePen(str, wstr, toW, fixed) {
+    const ws = wstr ? wstr.split('|') : null;
     return (str ? str.split('|') : []).map((s, j) => {
-      const pts = chaikin(s.split(' ').map(q => toW(q.split(',').map(Number))));
+      const raw = s.split(' ').map((q, k) => {
+        const [x, y] = toW(q.split(',').map(Number));
+        return [x, y, ws ? Number(ws[j][k] || 0) : fixed];
+      });
+      const pts = chaikin(raw);
       const cum = [0];
       for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]));
       const len = cum[cum.length - 1] || 1e-6;
-      const pen = PEN[kind](weights ? weights[j] : 1);
-      // each segment's width step: full in the middle, thinning to the ends
       const lv = new Uint8Array(Math.max(1, pts.length - 1));
       for (let k = 0; k < pts.length - 1; k++) {
-        const m = (cum[k] + cum[k + 1]) / 2;
-        const t = clamp(Math.min(m, len - m) / pen.taper, .3, 1);
-        lv[k] = level(pen.min + (pen.max - pen.min) * t);
+        let w = (pts[k][2] + pts[k + 1][2]) / 2;
+        if (!ws) {
+          const m = (cum[k] + cum[k + 1]) / 2;
+          w *= clamp(Math.min(m, len - m) / .05, .3, 1);
+        }
+        lv[k] = Math.max(0, Math.min(9, Math.round(w)));
       }
-      return { kind, pts, cum, len, lv };
+      return { pts, cum, len, lv };
     });
+  }
+  // face features: strokes with an anatomical thickness (head units), fills, circles, brow hairs
+  function parseFace(F, toW, u) {
+    const P = flat => { const out = []; for (let k = 0; k < flat.length; k += 2) out.push(toW([flat[k], flat[k + 1]])); return out; };
+    const clips = F.c.map(c => { const p = new Path2D(); P(c).forEach(([x, y], k) => (k ? p.lineTo(x, y) : p.moveTo(x, y))); p.closePath(); return p; });
+    const strokes = F.s.map(([flat, th, a, d, clip, ord]) => {
+      const pts = P(flat);
+      const cum = [0];
+      for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]));
+      return { pts, th: th.map(v => v / 10 / u), cum, len: cum[cum.length - 1] || 1e-6, a: a / 100, d, clip, ord };
+    });
+    const fills = F.f.map(([flat, a, d, clip, cut, ord]) => {
+      const p = new Path2D();
+      P(flat).forEach(([x, y], k) => (k ? p.lineTo(x, y) : p.moveTo(x, y)));
+      p.closePath();
+      return { p, a: a / 100, d, clip, cut, ord };
+    });
+    const circles = F.o.map(([cx, cy, r, a, d, clip, kind, w, ord]) => {
+      const [x, y] = toW([cx, cy]);
+      return { x, y, r: r / u, a: a / 100, d, clip, kind, w: w / 10 / u, ord };
+    });
+    const hairs = [];
+    for (let k = 0; k < F.h.length; k += 5) {
+      const [x0, y0] = toW([F.h[k], F.h[k + 1]]);
+      const [x1, y1] = toW([F.h[k + 2], F.h[k + 3]]);
+      hairs.push({ x0, y0, x1, y1, a: F.h[k + 4] / 100 });
+    }
+    return { strokes, fills, circles, hairs, clips };
   }
   // when each path is drawn, as a slice of the figure's 0→1 draw progress
   function schedule(list, a, b, each) {
@@ -92,14 +123,8 @@
     const u = d.unit;
     const X = EN ? [-SPACING, 0, SPACING + .8][i] : (1 - i) * SPACING;   // ١ ٢ ٣ in reading order
     const toW = ([x, y]) => [X + (x - d.ax) / u, (y - d.top) / u];
-    const ftrW = d.ftrW ? d.ftrW.split(',').map(v => Number(v) / 10) : null;
-    const groups = { sil: parsePaths(d.sil, 'sil', toW), ftr: parsePaths(d.ftr, 'ftr', toW, ftrW), hat: parsePaths(d.hat, 'hat', toW) };
-    // pupils, filled once the eyes are drawn
-    const dots = (d.dot ? d.dot.split('|') : []).map(q => {
-      const [x, y, r] = q.split(',').map(Number);
-      const [wx, wy] = toW([x, y]);
-      return { x: wx, y: wy, r: r / u };
-    });
+    const groups = { sil: parsePen(d.sil, d.silW, toW), lin: parsePen(d.lin, d.linW, toW), hat: parsePen(d.hat, null, toW, 1.4) };
+    const face = parseFace(d.face, toW, u);
     // construction lines, in world units
     const c = d.con;
     const con = c && {
@@ -107,25 +132,39 @@
       eye: [toW([c.eye[0], c.eye[1]]), toW([c.eye[2], c.eye[3]])],
       sh: [toW([c.sh[0], c.sh[1]]), toW([c.sh[2], c.sh[3]])],
     };
-    schedule(groups.sil, 0, .5, .5);
-    schedule(groups.ftr, .18, .86, .16);
-    schedule(groups.hat, .5, 1, .12);
+    schedule(groups.sil, 0, .45, .45);
+    schedule(groups.lin, .1, .8, .14);
+    schedule(groups.hat, 0, 1, .2);
     const img = kind => {
       const im = new Image();
       im.decoding = 'async';
       im.onload = mark;
-      im.src = `assets/team/${kind}-${i + 1}${SMALL ? '-s' : ''}.webp?v=2`;
+      im.src = `assets/team/${kind}-${i + 1}${SMALL ? '-s' : ''}.webp?v=3`;
       return im;
     };
+    // where the head is (the wash soaks outwards from the face)
+    const hc = toW([c.head[0], c.head[1]]);
     return {
-      X, groups, dots, con,
+      X, groups, face, con, hc,
       lext: d.ax / u,
       rext: (d.w - d.ax) / u,
       box: { x: X - d.ax / u, y: -d.top / u, w: d.w / u, h: d.h / u },
-      tone: img('tone'),
+      wash: img('wash'),
       photo: img('photo'),
     };
   });
+  let toneAsked = false;
+  function loadTones() {
+    if (toneAsked) return;
+    toneAsked = true;
+    figs.forEach((f, i) => {
+      const im = new Image();
+      im.decoding = 'async';
+      im.onload = mark;
+      im.src = `assets/team/tone-${i + 1}${SMALL ? '-s' : ''}.webp?v=3`;
+      f.tone = im;
+    });
+  }
   const scene = {
     x0: Math.min(...figs.map(f => f.X - f.lext)),
     x1: Math.max(...figs.map(f => f.X + f.rext)),
@@ -137,7 +176,7 @@
 
   const st = {
     axes: 0, tags: 0, zoom: 0, focus: 0,
-    draw: [0, 0, 0], con: [0, 0, 0], ink: [0, 0, 0], emph: [1, 1, 1], card: [0, 0, 0],
+    draw: [0, 0, 0], con: [0, 0, 0], wash: [0, 0, 0], ink: [0, 0, 0], emph: [1, 1, 1], card: [0, 0, 0],
   };
   const lens = { a: 0, x: 0, y: 0, on: false, fig: -1 };
   const ptr = { x: 0, y: 0, in: false };
@@ -172,7 +211,7 @@
     view.dpr = Math.min(window.devicePixelRatio || 1, 2);
     view.mobile = view.w < 760;
     view.top = head.offsetTop + head.offsetHeight;
-    for (const c of [canvas, layer]) {
+    for (const c of [canvas, layer, soak]) {
       c.width = Math.round(view.w * view.dpr);
       c.height = Math.round(view.h * view.dpr);
     }
@@ -189,16 +228,18 @@
     const S = Math.min(view.w * (view.mobile ? .96 : .9) / (scene.x1 - scene.x0), (bottom - top) / (scene.y1 - scene.y0));
     return { S, wx: (scene.x0 + scene.x1) / 2, wy: (scene.y0 + scene.y1) / 2, sx: view.w / 2, sy: (top + bottom) / 2 };
   }
-  // one partner close up: on the left with her card on the right (phones: centred, card docked below)
+  // one partner close up, head and shoulders: on the left with her card on the right
+  // (phones: centred, card docked below)
+  const FOCUS = [-.38, 2.45];          // the world band (head units) the close-up shows
   function camFocus(i) {
     const f = figs[i];
     const top = navH() + 14;
     if (view.mobile) {
-      const S = Math.min((view.h - top) * .6 / (FADE[1] - scene.y0), view.w * .9 / (f.lext + f.rext));
-      return { S, wx: f.X + (f.rext - f.lext) / 2, wy: scene.y0, sx: view.w / 2, sy: top + 6 };
+      const S = Math.min((view.h - top) * .56 / (FOCUS[1] - FOCUS[0]), view.w * .94 / 2.5);
+      return { S, wx: f.X, wy: FOCUS[0], sx: view.w / 2, sy: top + 4 };
     }
-    const S = (view.h - top - 10) / (FADE[1] + .15 - scene.y0);
-    return { S, wx: f.X, wy: scene.y0, sx: view.w * .34, sy: top };
+    const S = (view.h - top - 6) / (FOCUS[1] - FOCUS[0]);
+    return { S, wx: f.X, wy: FOCUS[0], sx: view.w * .31, sy: top };
   }
   const lerpCam = (a, b, t) => ({ S: mix(a.S, b.S, t), wx: mix(a.wx, b.wx, t), wy: mix(a.wy, b.wy, t), sx: mix(a.sx, b.sx, t), sy: mix(a.sy, b.sy, t) });
   function camera() {
@@ -240,7 +281,7 @@
   function drawConstruction(c, f, i, px) {
     const k = f.con;
     const t = st.con[i];
-    const a = .5 * t * (1 - st.ink[i]) * (.25 + .75 * st.emph[i]) * (1 - .5 * st.draw[i]);   // steps back once the portrait is drawn
+    const a = .5 * t * (1 - st.ink[i]) * (.25 + .75 * st.emph[i]) * (1 - .65 * st.draw[i]) * (1 - .8 * st.wash[i]);   // steps back once the portrait is drawn
     if (!k || a <= .01) return;
     const seg = (t0, t1) => clamp((t - t0) / (t1 - t0));
     c.save();
@@ -291,69 +332,252 @@
 
   const rgba = (c, a) => `rgba(${c[0] | 0}, ${c[1] | 0}, ${c[2] | 0}, ${a})`;
 
+  // the wash soaks into the paper from the face outwards: drawn on a sheet of its own, kept inside a soft disc
+  const soak = document.createElement('canvas');
+  const sctx = soak.getContext('2d');
+  function drawWash(c, f, i, a) {
+    const w = st.wash[i];
+    if (w <= 0 || a <= .01 || !f.wash.naturalWidth) return;
+    const b = f.box;
+    if (w >= 1) {
+      c.globalAlpha = a;
+      c.drawImage(f.wash, b.x, b.y, b.w, b.h);
+      c.globalAlpha = 1;
+      return;
+    }
+    sctx.setTransform(1, 0, 0, 1, 0, 0);
+    sctx.clearRect(0, 0, soak.width, soak.height);
+    sctx.setTransform(c.getTransform());
+    sctx.globalAlpha = a * (.4 + .6 * w);
+    sctx.drawImage(f.wash, b.x, b.y, b.w, b.h);
+    sctx.globalAlpha = 1;
+    const R = .15 + 4.8 * smooth01(w);
+    const g = sctx.createRadialGradient(f.hc[0], f.hc[1], R * .5, f.hc[0], f.hc[1], R);
+    g.addColorStop(0, '#000');
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    sctx.globalCompositeOperation = 'destination-in';
+    sctx.fillStyle = g;
+    sctx.fillRect(b.x - 1, b.y - 1, b.w + 2, b.h + 2);
+    sctx.globalCompositeOperation = 'source-over';
+    c.save();
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.drawImage(soak, 0, 0);
+    c.restore();
+  }
+
+  // pen paths: the drawn part of each, batched by width step
+  function drawPen(c, list, prog, col, a, px, zf) {
+    if (a <= .01) return;
+    const bins = [];
+    for (const p of list) {
+      const t = prog(p);
+      if (t > 0) tracePart(bins, p, t);
+    }
+    c.strokeStyle = rgba(col, Math.min(1, a));
+    bins.forEach((path, L) => {
+      if (!path) return;
+      c.lineWidth = LEVELS[L] * px * zf;
+      c.stroke(path);
+    });
+  }
+
+  // a stroke with a thickness: the outline of its drawn part (0..t), with round ends
+  function strokeOutline(path, s, t, minW) {
+    const { pts, th, cum } = s;
+    const stop = t * s.len;
+    const Q = [];
+    const W = [];
+    for (let k = 0; k < pts.length; k++) {
+      if (cum[k] <= stop) {
+        Q.push(pts[k]);
+        W.push(Math.max(th[k], minW));
+      } else {
+        const f = (stop - cum[k - 1]) / (cum[k] - cum[k - 1] || 1);
+        Q.push([mix(pts[k - 1][0], pts[k][0], f), mix(pts[k - 1][1], pts[k][1], f)]);
+        W.push(Math.max(mix(th[k - 1], th[k], f), minW));
+        break;
+      }
+    }
+    const m = Q.length;
+    if (m < 2) return;
+    const nx = new Float32Array(m);
+    const ny = new Float32Array(m);
+    for (let k = 0; k < m; k++) {
+      const p = Q[Math.max(0, k - 1)];
+      const q = Q[Math.min(m - 1, k + 1)];
+      const tx = q[0] - p[0];
+      const ty = q[1] - p[1];
+      const l = Math.hypot(tx, ty) || 1;
+      nx[k] = -ty / l * W[k] / 2;
+      ny[k] = tx / l * W[k] / 2;
+    }
+    path.moveTo(Q[0][0] + nx[0], Q[0][1] + ny[0]);
+    for (let k = 1; k < m; k++) path.lineTo(Q[k][0] + nx[k], Q[k][1] + ny[k]);
+    const a1 = Math.atan2(ny[m - 1], nx[m - 1]);
+    path.arc(Q[m - 1][0], Q[m - 1][1], W[m - 1] / 2, a1, a1 - Math.PI, true);
+    for (let k = m - 1; k >= 0; k--) path.lineTo(Q[k][0] - nx[k], Q[k][1] - ny[k]);
+    const a0 = Math.atan2(ny[0], nx[0]);
+    path.arc(Q[0][0], Q[0][1], W[0] / 2, a0 + Math.PI, a0, true);
+    path.closePath();
+  }
+
+  // the face: brows, eyes, nose, mouth — drawn feature by feature over the outline
+  const FACE_T0 = .42;
+  const FACE_STEP = .042;
+  const FACE_DUR = .15;
+  const HAIR_W = .5 / 360;
+  function drawFace(c, f, col, e, draw, px, lod) {
+    const F = f.face;
+    const prog = ord => clamp((draw - (FACE_T0 + ord * FACE_STEP)) / FACE_DUR);
+    const appear = ord => smooth01(clamp((draw - (FACE_T0 + ord * FACE_STEP + FACE_DUR * .45)) / .1));
+    // tones: brow bodies (fuller while the hairs are too small to see), lips, nostrils, lid shadow
+    for (const fl of F.fills) {
+      if (fl.cut) continue;
+      const a = fl.a * appear(fl.ord) * (fl.d ? lod : 1) * e * (fl.ord === 0 ? 1 + .45 * (1 - lod) : 1);
+      if (a <= .005) continue;
+      c.fillStyle = rgba(col, Math.min(1, a));
+      if (fl.clip >= 0) {
+        c.save();
+        c.clip(F.clips[fl.clip]);
+        c.fill(fl.p);
+        c.restore();
+      } else c.fill(fl.p);
+    }
+    // iris, pupil, rim (inside the eye opening)
+    for (const o of F.circles) {
+      if (o.kind === 3) continue;
+      const a = o.a * appear(o.ord) * e;
+      if (a <= .005) continue;
+      c.save();
+      if (o.clip >= 0) c.clip(F.clips[o.clip]);
+      c.beginPath();
+      c.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+      if (o.kind === 1) {
+        c.fillStyle = rgba(col, a);
+        c.fill();
+      } else {
+        c.strokeStyle = rgba(col, a);
+        c.lineWidth = Math.max(o.w, .3 * px);
+        c.stroke();
+      }
+      c.restore();
+    }
+    // strokes, batched by alpha
+    const buckets = new Map();
+    for (const s of F.strokes) {
+      const t = prog(s.ord);
+      if (t <= 0) continue;
+      const a = s.a * (s.d ? lod : 1);
+      if (a <= .01) continue;
+      const key = Math.round(a * 20);
+      let p = buckets.get(key);
+      if (!p) buckets.set(key, (p = new Path2D()));
+      strokeOutline(p, s, t, (s.d ? .3 : .4) * px);
+    }
+    buckets.forEach((p, key) => {
+      c.fillStyle = rgba(col, Math.min(1, key / 20 * e));
+      c.fill(p);
+    });
+    // brow hairs, close up only: thin wedges from the root
+    const th = prog(1);
+    if (lod > .01 && th > 0) {
+      const n = Math.floor(F.hairs.length * th);
+      const hb = [new Path2D(), new Path2D(), new Path2D()];
+      const w = Math.max(HAIR_W, .3 * px) / 2;
+      for (let k = 0; k < n; k++) {
+        const h = F.hairs[k];
+        const dx = h.x1 - h.x0;
+        const dy = h.y1 - h.y0;
+        const l = Math.hypot(dx, dy) || 1;
+        const ox = -dy / l * w;
+        const oy = dx / l * w;
+        const p = hb[h.a > .75 ? 2 : h.a > .5 ? 1 : 0];
+        p.moveTo(h.x0 + ox, h.y0 + oy);
+        p.lineTo(h.x1, h.y1);
+        p.lineTo(h.x0 - ox, h.y0 - oy);
+        p.closePath();
+      }
+      hb.forEach((p, k) => {
+        c.fillStyle = rgba(col, [.5, .7, .9][k] * lod * e);
+        c.fill(p);
+      });
+    }
+    // catch-lights: back to paper
+    c.save();
+    c.globalCompositeOperation = 'destination-out';
+    for (const o of F.circles) {
+      if (o.kind !== 3) continue;
+      const a = appear(o.ord);
+      if (a <= 0) continue;
+      c.fillStyle = `rgba(0, 0, 0, ${a})`;
+      c.beginPath();
+      c.arc(o.x, o.y, Math.max(o.r, .55 * px), 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
+  }
+
   function drawFigure(c, f, i, cam) {
     const e = .2 + .8 * st.emph[i];
     const ink = st.ink[i];
     const draw = st.draw[i];
     const px = 1 / cam.S;
+    const zf = clamp(Math.pow(cam.S / S_REF, .3), .6, 1.6);
+    const lod = smooth01(clamp((cam.S - LOD[0]) / (LOD[1] - LOD[0])));
     const b = f.box;
 
     drawConstruction(c, f, i, px);
 
-    // the toned portrait, revealed under a scan line running down the sheet
-    if (ink > 0 && f.tone.naturalWidth) {
+    // wash → hatching → pen lines → face; resting in a soft burgundy, deep ink once inked
+    const prog = p => clamp((draw - p.t0) / (p.t1 - p.t0));
+    const hp = clamp(st.wash[i] * 1.6 - .6);
+    const paint = (col, wa) => {
+      drawWash(c, f, i, wa * e);
+      drawPen(c, f.groups.hat, p => clamp((hp - p.t0) / (p.t1 - p.t0)), col, .5 * lod * e, px, zf);
+      drawPen(c, f.groups.sil, prog, col, e, px, zf);
+      drawPen(c, f.groups.lin, prog, col, .92 * e, px, zf);
+      // the face is inked a shade deeper than the rest: eyes, brows and mouth carry the likeness
+      drawFace(c, f, col.map((v, k) => mix(v, INK[k], .55)), e, draw, px, lod);
+    };
+    // inked: the photograph in the brand tones, the pen outline and folds over it
+    const inked = () => {
+      if (!f.tone || !f.tone.naturalWidth) return paint(INK, 1);
+      c.globalAlpha = e;
+      c.drawImage(f.tone, b.x, b.y, b.w, b.h);
+      c.globalAlpha = 1;
+      drawPen(c, f.groups.sil, prog, INK, e, px, zf);
+      drawPen(c, f.groups.lin, prog, INK, .6 * e, px, zf);
+    };
+    if (ink <= 0) paint(REST, .85);
+    else if (ink >= 1) inked();
+    else {
+      // the scan line runs down the sheet, inking what it has passed
       const scan = b.y + (b.h + .05) * ink;
+      c.save();
+      c.beginPath();
+      c.rect(b.x - 1, scan, b.w + 2, b.h + 2);
+      c.clip();
+      paint(REST, .85);
+      c.restore();
       c.save();
       c.beginPath();
       c.rect(b.x - 1, b.y - 1, b.w + 2, scan - b.y + 1);
       c.clip();
-      c.globalAlpha = e;
-      c.drawImage(f.tone, b.x, b.y, b.w, b.h);
+      inked();
       c.restore();
-      if (ink < 1) {
-        c.globalAlpha = e * Math.sin(Math.PI * ink);
-        c.strokeStyle = rgba(INK, 1);
-        c.lineWidth = 1.4 * px;
-        c.beginPath();
-        c.moveTo(b.x + .1, scan);
-        c.lineTo(b.x + b.w - .1, scan);
-        c.stroke();
-        c.lineWidth = px;
-        c.beginPath();
-        c.moveTo(b.x + .1, scan - .08); c.lineTo(b.x + .1, scan + .08);
-        c.moveTo(b.x + b.w - .1, scan - .08); c.lineTo(b.x + b.w - .1, scan + .08);
-        c.stroke();
-        c.globalAlpha = 1;
-      }
-    }
-
-    // the line drawing: pencil while sketched, burgundy ink once inked; hatching gives way to the tone
-    const col = PENCIL.map((v, k) => mix(v, INK[k], ink));
-    const kinds = [['sil', 1], ['ftr', 1 - .25 * ink], ['hat', .7 * (1 - .8 * ink)]];
-    for (const [kind, a] of kinds) {
-      if (a <= .01) continue;
-      const bins = [];
-      for (const p of f.groups[kind]) {
-        const t = clamp((draw - p.t0) / (p.t1 - p.t0));
-        if (t > 0) tracePart(bins, p, t);
-      }
-      c.strokeStyle = rgba(col, a * e);
-      bins.forEach((path, L) => {
-        if (!path) return;
-        c.lineWidth = LEVELS[L] * px;
-        c.stroke(path);
-      });
-    }
-    // pupils
-    const pd = clamp((draw - .5) / .12);
-    if (pd > 0 && f.dots.length) {
-      c.fillStyle = rgba(col, pd * e);
+      c.globalAlpha = e * Math.sin(Math.PI * ink);
+      c.strokeStyle = rgba(INK, 1);
+      c.lineWidth = 1.4 * px;
       c.beginPath();
-      for (const d of f.dots) {
-        c.moveTo(d.x + d.r, d.y);
-        c.arc(d.x, d.y, d.r * (.4 + .6 * pd), 0, Math.PI * 2);
-      }
-      c.fill();
+      c.moveTo(b.x + .1, scan);
+      c.lineTo(b.x + b.w - .1, scan);
+      c.stroke();
+      c.lineWidth = px;
+      c.beginPath();
+      c.moveTo(b.x + .1, scan - .08); c.lineTo(b.x + .1, scan + .08);
+      c.moveTo(b.x + b.w - .1, scan - .08); c.lineTo(b.x + b.w - .1, scan + .08);
+      c.stroke();
+      c.globalAlpha = 1;
     }
 
     // the lens: inside it, the photograph
@@ -372,6 +596,7 @@
 
   function render(cam) {
     const { w, h, dpr } = view;
+    const fade = [mix(FADE[0], FOCUS[1] - .62, st.zoom), mix(FADE[1], FOCUS[1] - .02, st.zoom)];
 
     // structural axes, behind everything
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -384,8 +609,8 @@
       if (a <= 0) return;
       const [x, ya] = cam.toS(f.X, AXIS_TOP + .25);
       const yb = cam.toS(f.X, -.14)[1];
-      const yc = cam.toS(f.X, FADE[0] + .35)[1];
-      const yd = cam.toS(f.X, FADE[1] + .35)[1];
+      const yc = cam.toS(f.X, fade[0] + .35)[1];
+      const yd = cam.toS(f.X, fade[1] + .35)[1];
       const reach = mix(ya, ya + (yb - ya) + (yd - yc), a);
       ctx.strokeStyle = rgba(PENCIL, .5 * (.4 + .6 * st.emph[i]));
       ctx.beginPath();
@@ -408,7 +633,7 @@
     lctx.imageSmoothingQuality = 'high';
     figs.forEach((f, i) => drawFigure(lctx, f, i, cam));
     lctx.globalCompositeOperation = 'destination-in';
-    const g = lctx.createLinearGradient(0, FADE[0], 0, FADE[1]);
+    const g = lctx.createLinearGradient(0, fade[0], 0, fade[1]);
     g.addColorStop(0, '#000');
     g.addColorStop(1, 'rgba(0, 0, 0, 0)');
     lctx.fillStyle = g;
@@ -535,6 +760,9 @@
     .to(st.draw, { 0: 1, duration: 3.4, ease: 'power1.inOut' }, 1.35)
     .to(st.draw, { 1: 1, duration: 3.4, ease: 'power1.inOut' }, 1.7)
     .to(st.draw, { 2: 1, duration: 3.4, ease: 'power1.inOut' }, 2.05)
+    .to(st.wash, { 0: 1, duration: 2.4, ease: 'power1.inOut' }, 3.9)
+    .to(st.wash, { 1: 1, duration: 2.4, ease: 'power1.inOut' }, 4.25)
+    .to(st.wash, { 2: 1, duration: 2.4, ease: 'power1.inOut' }, 4.6)
     .to(st, { tags: 1, duration: .9, ease: 'power1.out' }, 4.2)
     .to('.team-scroll > *', { opacity: 1, duration: .8 }, 4.6);
 
@@ -582,6 +810,9 @@
       .from(pf.querySelectorAll('.profile-head > *'), { opacity: 0, y: 12, duration: .6, stagger: .08, ease: 'power3.out' }, .45)
       .from(pf.querySelectorAll('.profile-row'), { opacity: 0, x: EN ? -14 : 14, duration: .6, stagger: .08, ease: 'power3.out' }, .6);
   });
+
+  setTimeout(loadTones, 2500);
+  window.addEventListener('scroll', loadTones, { once: true, passive: true });
 
   /* ------------------------------------------------------------ loop */
 
