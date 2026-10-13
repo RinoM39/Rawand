@@ -24,10 +24,10 @@
   const clone = o => JSON.parse(JSON.stringify(o));
   const VIDEO_LINK = /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)\//i;
 
-  const S = { auth: false, email: '', token: '', maxImage: 25 << 20, maxVideo: 1024 << 20, projects: [], loaded: false };
+  const S = { auth: false, token: '', maxImage: 25 << 20, maxVideo: 1024 << 20, projects: [], loaded: false };
 
   const MSG = {
-    bad_login: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    bad_login: 'كلمة المرور غير صحيحة.',
     too_many: 'محاولات كثيرة خاطئة. انتظر قليلاً ثم حاول من جديد.',
     unauthorized: 'انتهت الجلسة. سجّل الدخول من جديد.',
     title_required: 'اكتب اسم المشروع بالعربي والإنجليزي.',
@@ -36,7 +36,7 @@
     too_big: 'الملف أكبر من الحد المسموح.',
     bad_type: 'صيغة الملف غير مدعومة.',
     not_found: 'المشروع غير موجود — ربما حُذف.',
-    not_configured: 'السيرفر لم يُضبط بعد: البريد وكلمة المرور غير موجودين في إعدادات Neon.',
+    not_configured: 'السيرفر لم يُضبط بعد: كلمة المرور غير موجودة في إعدادات Neon.',
     upload_failed: 'تعذّر رفع الملف.',
     network: 'تعذّر الاتصال بالخادم. تحقّق من الإنترنت وحاول مجدداً.',
     no_api: 'لم يُضبط عنوان الـ API بعد (js/config.js)، فلوحة التحكم لا تستطيع الاتصال به.',
@@ -189,11 +189,9 @@
 
   function applySession(s) {
     S.auth = true;
-    S.email = s.email || '';
     if (s.token) saveToken(s.token, s.exp);
     S.maxImage = s.maxImage || S.maxImage;
     S.maxVideo = s.maxVideo || S.maxVideo;
-    $('#deskUser').textContent = S.email;
     $('#imgHint').textContent = `JPG · PNG · WEBP — حتى ${size(S.maxImage)} للصورة. تُصغَّر الصور الكبيرة تلقائياً قبل الرفع.`;
     $('#vidHint').textContent = `MP4 · MOV · WEBM — حتى ${size(S.maxVideo)}. الأفضل MP4 ليعمل على كل الأجهزة.`;
   }
@@ -289,7 +287,7 @@
     ['en0', 'en1', 'en2', 'en3', 'en4', 'en5'].forEach(k => el('path', { d: P[k] }, en));
   }
 
-  // sign-in mark: ghost outlines; line 1 inks with the email, line 2 with the password, the rest on entry
+  // sign-in mark: ghost outlines; lines 1 and 2 ink as the password is typed, the rest on entry
   function buildGateMark(svg) {
     if (!LOGO || !svg) return;
     svg.setAttribute('viewBox', LOGO.viewBox.mark);
@@ -309,14 +307,13 @@
 
   const gate = $('#gate');
   const loginForm = $('#loginForm');
-  const emailIn = $('#loginEmail');
   const passIn = $('#loginPass');
   const loginErr = $('#loginError');
   let gateDone = null;
 
   function gateStep() {
-    const emailOk = /^\S+@\S+\.\S+$/.test(emailIn.value.trim());
-    gate.dataset.step = emailOk ? (passIn.value.length >= 4 ? '2' : '1') : '0';
+    const n = passIn.value.length;
+    gate.dataset.step = n >= 6 ? '2' : n ? '1' : '0';
   }
 
   function showGate(onDone) {
@@ -329,12 +326,10 @@
       : 'للفريق فقط. سجّل الدخول لإدارة المشاريع.';
     if (!onDone) $('#desk').hidden = true;
     loginErr.textContent = '';
-    if (S.email) emailIn.value = S.email;
     gateStep();
-    setTimeout(() => (emailIn.value ? passIn : emailIn).focus(), 60);
+    setTimeout(() => passIn.focus(), 60);
   }
 
-  emailIn.addEventListener('input', gateStep);
   passIn.addEventListener('input', gateStep);
   $('#pwEye').addEventListener('click', e => {
     const show = passIn.type === 'password';
@@ -352,14 +347,13 @@
 
   loginForm.addEventListener('submit', async e => {
     e.preventDefault();
-    const email = emailIn.value.trim();
     const password = passIn.value;
-    if (!email || !password) { shake('اكتب البريد الإلكتروني وكلمة المرور.'); return; }
+    if (!password) { shake('اكتب كلمة المرور.'); return; }
     const btn = $('#loginBtn');
     btn.classList.add('is-busy');
     loginErr.textContent = '';
     try {
-      const s = await api('login', { body: { email, password } });
+      const s = await api('login', { body: { password } });
       applySession(s);
       passIn.value = '';
       gate.dataset.step = '3';

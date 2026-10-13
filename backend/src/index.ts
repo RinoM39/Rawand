@@ -6,7 +6,7 @@
      GET  /projects            published projects, in the order set on /auth
      GET  /project?id=…        one project + its neighbours (drafts only with an admin token)
    Dashboard (/auth) — Authorization: Bearer <token from /login>
-     POST /login               {email, password} — the one fixed account (ADMIN_EMAIL / ADMIN_PASSWORD)
+     POST /login               {password} — the one admin password (ADMIN_PASSWORD)
      GET  /session             is the token still good? (+ upload limits)
      GET  /all                 every project, drafts included
      POST /save                {project} — creates or updates
@@ -359,20 +359,16 @@ app.get("/project", async (c) => {
   });
 });
 
-const sessionInfo = () => ({ auth: true, email: env.ADMIN_EMAIL ?? "", maxImage: MAX_IMAGE, maxVideo: MAX_VIDEO });
+const sessionInfo = () => ({ auth: true, maxImage: MAX_IMAGE, maxVideo: MAX_VIDEO });
 
 app.post("/login", async (c) => {
-  if (!env.ADMIN_EMAIL || !env.ADMIN_PASSWORD || !env.SESSION_SECRET) throw new Fail("not_configured", 500);
+  if (!env.ADMIN_PASSWORD || !env.SESSION_SECRET) throw new Fail("not_configured", 500);
   const ip = c.req.header("cf-connecting-ip") ?? c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   let wait = await guard(ip);
   if (wait) throw new Fail("too_many", 429, { wait });
   const b = await body(c);
-  const email = String(b.email ?? "").trim().toLowerCase();
   const password = String(b.password ?? "");
-  // both are always compared, so timing says nothing about which one was wrong
-  const okEmail = safeEqual(email, env.ADMIN_EMAIL.trim().toLowerCase());
-  const okPass = safeEqual(password, env.ADMIN_PASSWORD);
-  if (!okEmail || !okPass) {
+  if (!safeEqual(password, env.ADMIN_PASSWORD)) {
     await new Promise((r) => setTimeout(r, 400));
     wait = await guard(ip, "fail");
     throw wait ? new Fail("too_many", 429, { wait }) : new Fail("bad_login", 401);

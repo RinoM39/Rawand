@@ -57,6 +57,7 @@
     'التصميم المعماري والداخلي': 'Architectural and interior design',
     'التنفيذ والإشراف': 'Construction and supervision',
     'الرياض، المملكة العربية السعودية': 'Riyadh, Saudi Arabia',
+    'دمشق، سوريا': 'Damascus, Syria',
     '© ٢٠٢٦ روند للاستشارات الهندسية. صُمّم في الرياض.': '© 2026 RAWAND Engineering Consultants. Designed in Riyadh.',
     'إلى أعلى الصفحة': 'Back to top',
 
