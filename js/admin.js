@@ -4,7 +4,8 @@
      the API hands back a token, kept in localStorage for 12 hours
    - list of projects: reorder (= order on the site), publish state, edit, preview, delete
    - editor: Arabic + English text, images (compressed in the browser, first = cover,
-     drag to reorder) and a video file sent straight to Neon storage with progress, or a YouTube/Vimeo link
+     drag to reorder; up to 50) and up to three videos — files sent to Neon storage with progress,
+     and/or YouTube/Vimeo links — in the order they show on the project page
    Talks to the Neon function at window.RAWAND_API (js/config.js; source in backend/).
    Needs js/logo-data.js for the logo.
    ===================================================================== */
@@ -26,7 +27,7 @@
   const clone = o => JSON.parse(JSON.stringify(o));
   const VIDEO_LINK = /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)\//i;
 
-  const S = { auth: false, token: '', maxImage: 25 << 20, maxVideo: 1024 << 20, projects: [], loaded: false };
+  const S = { auth: false, token: '', maxImage: 25 << 20, maxVideo: 1024 << 20, maxImages: 50, maxVideos: 3, projects: [], loaded: false };
 
   const MSG = {
     bad_login: 'كلمة المرور غير صحيحة.',
@@ -58,7 +59,7 @@
     summary: { ar: '', en: '' }, description: { ar: '', en: '' },
     year: '', area: '', areaUnit: 'm2',
     scope: { consult: false, design: true, build: false },
-    images: [], video: null, videoUrl: '',
+    images: [], videos: [],
   };
 
   const ICON = {
@@ -74,6 +75,11 @@
     photo: '<rect x="3" y="5" width="18" height="14"/><path d="m3 16 5-5 4 4 3-3 6 6"/>',
     film: '<rect x="3" y="6" width="13" height="12"/><path d="m16 10 5-3v10l-5-3"/>',
   };
+
+  // a project's videos as a list: [{src, size} | {url}] (older projects: one file and/or one link)
+  const videosOf = p => (Array.isArray(p.videos)
+    ? p.videos
+    : [...(p.video ? [p.video] : []), ...(p.videoUrl ? [{ url: p.videoUrl }] : [])]);
 
   /* ------------------------------------------------------------ tiny DOM helpers */
 
@@ -194,8 +200,10 @@
     if (s.token) saveToken(s.token, s.exp);
     S.maxImage = s.maxImage || S.maxImage;
     S.maxVideo = s.maxVideo || S.maxVideo;
+    S.maxImages = s.maxImages || S.maxImages;
+    S.maxVideos = s.maxVideos || S.maxVideos;
     $('#imgHint').textContent = `JPG · PNG · WEBP — حتى ${size(S.maxImage)} للصورة. تُصغَّر الصور الكبيرة تلقائياً قبل الرفع.`;
-    $('#vidHint').textContent = `MP4 · MOV · WEBM — حتى ${size(S.maxVideo)}. الأفضل MP4 ليعمل على كل الأجهزة.`;
+    $('#vidHint').textContent = `MP4 · MOV · WEBM — حتى ${size(S.maxVideo)} للفيديو. الأفضل MP4 ليعمل على كل الأجهزة.`;
   }
 
   /* ------------------------------------------------------------ uploads: to Neon storage (through the site's /media) */
@@ -484,7 +492,8 @@
       if (p.location && p.location.ar) meta.push(h('span', null, p.location.ar));
       if (p.year) meta.push(h('span', null, arabic(p.year)));
       meta.push(h('span', null, icon('photo'), arabic((p.images || []).length)));
-      if (p.video || p.videoUrl) meta.push(h('span', null, icon('film'), 'فيديو'));
+      const nv = videosOf(p).length;
+      if (nv) meta.push(h('span', null, icon('film'), nv > 1 ? arabic(nv) + ' فيديو' : 'فيديو'));
       const open = e => { if (!e.target.closest('button, a')) location.hash = '#/edit/' + encodeURIComponent(p.id); };
       return h('li', { class: 'pitem', dataset: { id: p.id }, onclick: open },
         h('span', { class: 'pitem-num' }, pad2(i + 1)),
@@ -554,9 +563,10 @@
   const editor = $('#editor');
   const tilesEl = $('#tiles');
   // E.tiles: [{ key, src, w, h, status: 'done' | 'uploading' | 'error', progress, preview, file, ctrl, error }]
-  const E = { open: false, id: '', draft: null, tiles: [], video: null, dirty: false, saving: false };
+  // E.videos: [{ key, kind: 'file' | 'link', src, size, name, url, status, progress, file, preview, ctrl, error }]
+  const E = { open: false, id: '', draft: null, tiles: [], videos: [], dirty: false, saving: false };
 
-  const busy = () => E.tiles.some(t => t.status === 'uploading') || !!(E.video && E.video.status === 'uploading');
+  const busy = () => E.tiles.some(t => t.status === 'uploading') || E.videos.some(v => v.status === 'uploading');
 
   function setDirty(v) {
     E.dirty = v;
@@ -565,7 +575,7 @@
 
   function paintState() {
     const st = $('#saveState');
-    const n = E.tiles.filter(t => t.status === 'uploading').length + (E.video && E.video.status === 'uploading' ? 1 : 0);
+    const n = E.tiles.filter(t => t.status === 'uploading').length + E.videos.filter(v => v.status === 'uploading').length;
     st.classList.toggle('is-dirty', E.dirty);
     if (n) st.textContent = n === 1 ? 'جارٍ رفع ملف…' : `جارٍ رفع ${arabic(n)} ملفات…`;
     else if (E.dirty) st.textContent = 'تغييرات غير محفوظة';
@@ -588,7 +598,10 @@
     E.id = p ? p.id : '';
     E.draft = Object.assign(clone(BLANK), p ? clone(p) : {});
     E.tiles = (E.draft.images || []).map(m => ({ key: uid(8), src: m.src, w: m.w, h: m.h, status: 'done' }));
-    E.video = E.draft.video ? { src: E.draft.video.src, size: E.draft.video.size || 0, name: E.draft.video.src.split('/').pop(), status: 'done' } : null;
+    E.videos = videosOf(E.draft).map(v => (v.url
+      ? { key: uid(8), kind: 'link', url: v.url, status: 'done' }
+      : { key: uid(8), kind: 'file', src: v.src, size: v.size || 0, name: v.src.split('/').pop(), status: 'done' }));
+    $('#fVideoUrl').value = '';
 
     $$('[data-f]', editor).forEach(el => {
       const v = getPath(E.draft, el.dataset.f);
@@ -600,7 +613,7 @@
     renderChips();
     paintCounts();
     renderTiles();
-    renderVideo();
+    renderVideos();
     setDirty(false);
 
     $('#listView').hidden = true;
@@ -612,10 +625,10 @@
   function closeEditor() {
     if (!E.open) return;
     E.tiles.forEach(t => { if (t.ctrl) t.ctrl.abort(); if (t.preview) URL.revokeObjectURL(t.preview); });
-    if (E.video) { if (E.video.ctrl) E.video.ctrl.abort(); if (E.video.preview) URL.revokeObjectURL(E.video.preview); }
+    E.videos.forEach(v => { if (v.ctrl) v.ctrl.abort(); if (v.preview) URL.revokeObjectURL(v.preview); });
     E.open = false;
     E.tiles = [];
-    E.video = null;
+    E.videos = [];
     E.dirty = false;
   }
 
@@ -680,7 +693,7 @@
         toast(`«${file.name}» ليس صورة.`, true);
         continue;
       }
-      if (E.tiles.length >= 60) { toast('الحد الأقصى ٦٠ صورة للمشروع.', true); break; }
+      if (E.tiles.length >= S.maxImages) { toast(`الحد الأقصى ${arabic(S.maxImages)} صورة للمشروع.`, true); break; }
       const t = { key: uid(8), status: 'uploading', progress: 0, file, preview: URL.createObjectURL(file) };
       E.tiles.push(t);
       added++;
@@ -795,28 +808,57 @@
     $$('.tile', tilesEl).forEach(x => x.classList.remove('is-dragging', 'is-target'));
   });
 
-  /* ------------------------------------------------------------ video */
+  /* ------------------------------------------------------------ videos (up to three: files and/or links) */
 
-  function setVideo(file) {
-    if (!file) return;
-    if (!/^video\//.test(file.type) && !/\.(mp4|m4v|mov|webm)$/i.test(file.name)) { toast('هذا الملف ليس فيديو.', true); return; }
-    if (file.size > S.maxVideo) { toast(`الفيديو أكبر من ${size(S.maxVideo)}.`, true); return; }
-    dropVideo();
-    E.video = { status: 'uploading', progress: 0, name: file.name, size: file.size, file, preview: URL.createObjectURL(file) };
-    renderVideo();
+  const vidsEl = $('#vids');
+
+  function addVideos(files) {
+    let added = 0;
+    for (const file of files) {
+      if (!file) continue;
+      if (!/^video\//.test(file.type) && !/\.(mp4|m4v|mov|webm)$/i.test(file.name)) { toast(`«${file.name}» ليس فيديو.`, true); continue; }
+      if (file.size > S.maxVideo) { toast(`«${file.name}» أكبر من ${size(S.maxVideo)}.`, true); continue; }
+      if (E.videos.length >= S.maxVideos) { toast(`الحد الأقصى ${arabic(S.maxVideos)} فيديوهات للمشروع.`, true); break; }
+      const v = { key: uid(8), kind: 'file', status: 'uploading', progress: 0, name: file.name, size: file.size, file, preview: URL.createObjectURL(file) };
+      E.videos.push(v);
+      added++;
+      uploadVideo(v);
+    }
+    if (added) { renderVideos(); setDirty(true); }
+  }
+
+  // a YouTube / Vimeo link typed in the field: checked, then added to the list
+  function addLink(quiet) {
+    const input = $('#fVideoUrl');
+    const link = input.value.trim();
+    if (!link) return true;
+    if (!VIDEO_LINK.test(link)) {
+      invalid('#fVideoUrl').focus();
+      toast(MSG.bad_video_url, true);
+      return false;
+    }
+    if (E.videos.length >= S.maxVideos) {
+      if (!quiet) toast(`الحد الأقصى ${arabic(S.maxVideos)} فيديوهات للمشروع.`, true);
+      return false;
+    }
+    E.videos.push({ key: uid(8), kind: 'link', url: link, status: 'done' });
+    input.value = '';
+    input.closest('.field').classList.remove('is-invalid');
+    renderVideos();
     setDirty(true);
-    uploadVideo(E.video);
+    return true;
   }
 
   async function uploadVideo(v) {
     v.status = 'uploading';
+    v.progress = 0;
     v.ctrl = new AbortController();
-    renderVideo();
+    paintVideo(v);
     paintState();
     try {
       const res = await upload(v.file, 'video', p => {
         v.progress = p;
-        if (E.video === v) paintVideoProgress();
+        paintVideoProgress(v);
       }, v.ctrl.signal);
       Object.assign(v, { src: res.src, size: res.size, status: 'done', ctrl: null });
     } catch (e) {
@@ -825,54 +867,85 @@
       v.ctrl = null;
       v.error = message(e);
     }
-    if (E.video === v) { renderVideo(); paintState(); }
+    if (E.videos.includes(v)) { paintVideo(v); paintState(); }
   }
 
-  function dropVideo() {
-    if (!E.video) return;
-    if (E.video.ctrl) E.video.ctrl.abort();
-    if (E.video.preview) URL.revokeObjectURL(E.video.preview);
-    E.video = null;
-  }
-
-  function paintVideoProgress() {
-    const v = E.video;
-    $('#vidBar i').style.setProperty('--p', v.progress);
-    $('#vidState').textContent = `جارٍ الرفع… ${arabic(Math.floor(v.progress * 100))}٪ من ${size(v.size)}`;
-  }
-
-  function renderVideo() {
-    const v = E.video;
-    $('#vidCard').hidden = !v;
-    $('#vidDrop').hidden = !!v;
-    const state = $('#vidState');
-    state.classList.remove('is-warn');
-    $('#vidCard .vid-retry')?.remove();
-    if (!v) { $('#vidPlayer').removeAttribute('src'); return; }
-    const player = $('#vidPlayer');
-    const src = v.preview || media(v.src);
-    if (player.getAttribute('src') !== src) player.src = src;
-    $('#vidName').textContent = v.name || '';
-    $('#vidBar').hidden = v.status !== 'uploading';
-    if (v.status === 'uploading') paintVideoProgress();
-    else if (v.status === 'error') {
-      state.textContent = v.error;
-      state.classList.add('is-warn');
-      if (v.file) state.after(h('button', { type: 'button', class: 'btn btn-ghost btn-sm vid-retry', onclick: () => uploadVideo(v) }, 'إعادة المحاولة'));
-    } else state.textContent = 'تم الرفع' + (v.size ? ' · ' + size(v.size) : '') + '.';
-  }
-
-  $('#vidPlayer').addEventListener('error', () => {
-    if (!E.video) return;
-    const st = $('#vidState');
-    st.textContent = 'المتصفح لا يستطيع تشغيل هذا الفيديو. الأفضل رفعه بصيغة MP4 (H.264).';
-    st.classList.add('is-warn');
-  });
-  $('#vidRemove').addEventListener('click', () => {
-    dropVideo();
-    renderVideo();
+  function removeVideo(v) {
+    if (v.ctrl) v.ctrl.abort();
+    if (v.preview) URL.revokeObjectURL(v.preview);
+    E.videos = E.videos.filter(x => x !== v);
+    renderVideos();
     setDirty(true);
-  });
+  }
+
+  function moveVideo(v, to, act) {
+    const from = E.videos.indexOf(v);
+    to = Math.max(0, Math.min(E.videos.length - 1, to));
+    if (from < 0 || from === to) return;
+    E.videos.splice(from, 1);
+    E.videos.splice(to, 0, v);
+    renderVideos();
+    setDirty(true);
+    if (act && v.el) ($(`[data-act="${act}"]:not(:disabled)`, v.el) || $('[data-act]:not(:disabled)', v.el)).focus();
+  }
+
+  function paintVideoProgress(v) {
+    if (!v.el || !v.el.isConnected) return;
+    $('.bar i', v.el).style.setProperty('--p', v.progress);
+    $('.vid-state', v.el).textContent = `جارٍ الرفع… ${arabic(Math.floor(v.progress * 100))}٪ من ${size(v.size)}`;
+  }
+
+  function videoEl(v, i) {
+    const n = E.videos.length;
+    const state = h('p', { class: 'vid-state' + (v.status === 'error' ? ' is-warn' : '') });
+    let shown;
+    if (v.kind === 'link') {
+      const box = h('div', { class: 'vid-link-box' }, icon('film'), h('span', null, /vimeo/i.test(v.url) ? 'رابط Vimeo' : 'رابط YouTube'));
+      shown = box;
+      state.textContent = 'يُعرض من الرابط في صفحة المشروع.';
+    } else {
+      const player = h('video', { class: 'vid-player', controls: true, preload: 'metadata', playsinline: true });
+      player.src = v.preview || media(v.src);
+      player.addEventListener('error', () => {
+        state.textContent = 'المتصفح لا يستطيع تشغيل هذا الفيديو. الأفضل رفعه بصيغة MP4 (H.264).';
+        state.classList.add('is-warn');
+      });
+      shown = player;
+      if (v.status === 'error') state.textContent = v.error;
+      else if (v.status === 'done') state.textContent = 'تم الرفع' + (v.size ? ' · ' + size(v.size) : '') + '.';
+    }
+    const li = h('li', { class: 'vid' + (v.kind === 'link' ? ' is-link' : ''), dataset: { key: v.key } },
+      shown,
+      h('div', { class: 'vid-side' },
+        h('span', { class: 'vid-num' }, arabic(i + 1)),
+        h('p', { class: 'vid-name', dir: 'ltr' }, v.kind === 'link' ? v.url : (v.name || '')),
+        state,
+        v.status === 'uploading' ? h('span', { class: 'bar' }, h('i', { style: `--p:${v.progress || 0}` })) : null,
+        v.status === 'error' && v.file ? h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => uploadVideo(v) }, 'إعادة المحاولة') : null,
+        h('div', { class: 'vid-tools' },
+          iconBtn('up', 'تقديم', () => moveVideo(v, i - 1, 'up'), i === 0),
+          iconBtn('down', 'تأخير', () => moveVideo(v, i + 1, 'down'), i === n - 1),
+          h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => removeVideo(v) }, 'إزالة الفيديو'))));
+    v.el = li;
+    if (v.status === 'uploading') requestAnimationFrame(() => paintVideoProgress(v));
+    return li;
+  }
+
+  function renderVideos() {
+    vidsEl.replaceChildren(...E.videos.map(videoEl));
+    const full = E.videos.length >= S.maxVideos;
+    $('#vidAdd').hidden = full;
+    $('#vidFull').hidden = !full;
+  }
+  function paintVideo(v) {
+    const i = E.videos.indexOf(v);
+    if (i < 0 || !v.el || !v.el.isConnected) return;
+    v.el.replaceWith(videoEl(v, i));
+  }
+
+  $('#vidLinkAdd').addEventListener('click', () => addLink());
+  $('#fVideoUrl').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } });
+  $('#fVideoUrl').addEventListener('input', e => e.target.closest('.field').classList.remove('is-invalid'));
 
   /* ------------------------------------------------------------ dropping & picking files */
 
@@ -893,13 +966,13 @@
   }
   dropZone($('#imgDrop'), addImages);
   dropZone(tilesEl, addImages);
-  dropZone($('#vidDrop'), files => setVideo(files[0]));
+  dropZone($('#vidDrop'), addVideos);
   // a file dropped anywhere else must not make the browser leave the page
   window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
   window.addEventListener('drop', e => { if (hasFiles(e)) e.preventDefault(); });
 
   $('#imgInput').addEventListener('change', e => { addImages(Array.from(e.target.files)); e.target.value = ''; });
-  $('#vidInput').addEventListener('change', e => { setVideo(e.target.files[0]); e.target.value = ''; });
+  $('#vidInput').addEventListener('change', e => { addVideos(Array.from(e.target.files)); e.target.value = ''; });
   // paste a screenshot / copied image straight into the project
   document.addEventListener('paste', e => {
     if (!E.open || !e.clipboardData) return;
@@ -935,19 +1008,19 @@
       return;
     }
     if (E.tiles.some(t => t.status === 'error')) toast('بعض الصور لم تُرفع وسيتم تجاهلها.', true);
-    const link = (d.videoUrl || '').trim();
-    if (link && !VIDEO_LINK.test(link)) {
-      invalid('#fVideoUrl').focus();
-      toast(MSG.bad_video_url, true);
+    // a link typed but not added yet goes in with the save
+    if (!addLink(true)) {
+      if (E.videos.length >= S.maxVideos) toast(`الرابط لم يُضف: المشروع فيه ${arabic(S.maxVideos)} فيديوهات.`, true);
       return;
     }
+    if (E.videos.some(v => v.status === 'error')) toast('بعض الفيديوهات لم تُرفع وسيتم تجاهلها.', true);
+    const videos = E.videos
+      .filter(v => v.kind === 'link' || v.status === 'done')
+      .map(v => (v.kind === 'link' ? { url: v.url } : { src: v.src, size: v.size || 0 }));
 
-    const project = Object.assign(clone(d), {
-      id: E.id,
-      videoUrl: link,
-      images,
-      video: E.video && E.video.status === 'done' ? { src: E.video.src, size: E.video.size || 0 } : null,
-    });
+    const project = Object.assign(clone(d), { id: E.id, images, videos });
+    delete project.video;
+    delete project.videoUrl;
     E.saving = true;
     $('#saveBtn').classList.add('is-busy');
     try {
@@ -958,6 +1031,8 @@
       E.id = p.id;
       E.draft = Object.assign(clone(BLANK), clone(p));
       E.tiles = E.tiles.filter(t => t.status === 'done');
+      E.videos = E.videos.filter(v => v.kind === 'link' || v.status === 'done');
+      renderVideos();
       if (wasNew) {
         history.replaceState(null, '', '#/edit/' + encodeURIComponent(p.id));
         currentHash = location.hash;

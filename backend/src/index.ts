@@ -7,7 +7,7 @@
      GET  /project?id=…        one project + its neighbours (drafts only with an admin token)
    Dashboard (/auth) — Authorization: Bearer <token from /login>
      POST /login               {password} — the one admin password (ADMIN_PASSWORD)
-     GET  /session             is the token still good? (+ upload limits)
+     GET  /session             is the token still good? (+ upload limits: size per file, photos and videos per project)
      GET  /all                 every project, drafts included
      POST /save                {project} — creates or updates
      POST /delete              {id}
@@ -40,6 +40,9 @@ const MEDIA_BASE = `${(env.AWS_ENDPOINT_URL_S3 ?? "").replace(/\/+$/, "")}/${BUC
 const TOKEN_HOURS = 12;
 const MAX_IMAGE = 25 * 1024 * 1024;
 const MAX_VIDEO = 1024 * 1024 * 1024; // the free plan holds 5 GB in all
+const MAX_IMAGES = 50;                  // photos per project
+const MAX_VIDEOS = 3;                   // videos per project: uploaded files and/or YouTube · Vimeo links
+const VIDEO_LINK = /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)\//i;
 const KEY_RE = /^projects\/[a-f0-9]{20}\.(jpg|png|webp|gif|avif|mp4|webm)$/;
 
 // what the browser says the file is → the extension (and type) it is stored with
@@ -106,11 +109,16 @@ class Fail extends Error {
 
 type Pair = { ar: string; en: string };
 type Media = { key: string; w?: number; h?: number; size?: number };
+// a video is a file in the bucket ({key, size}) or a YouTube / Vimeo link ({url})
+type Vid = { key?: string; size?: number; url?: string };
 type ProjectData = {
   title: Pair; category: Pair; location: Pair; summary: Pair; description: Pair;
   year: string; area: string; areaUnit: "m2" | "ha";
   scope: { consult: boolean; design: boolean; build: boolean };
-  images: Media[]; video: Media | null; videoUrl: string;
+  images: Media[];
+  videos?: Vid[];
+  // projects saved before the video list: one file and/or one link
+  video?: Media | null; videoUrl?: string;
 };
 type Row = { id: string; sort: number; published: boolean; data: ProjectData; created_at: Date; updated_at: Date };
 
@@ -131,7 +139,9 @@ const keyOf = (m: unknown): string => {
   const raw = typeof o.key === "string" ? o.key : typeof o.src === "string" && o.src.startsWith(MEDIA_BASE) ? o.src.slice(MEDIA_BASE.length) : "";
   return KEY_RE.test(raw) ? raw : "";
 };
-const mediaKeys = (d: ProjectData) => [...d.images.map((m) => m.key), ...(d.video ? [d.video.key] : [])];
+const vidsOf = (d: ProjectData): Vid[] =>
+  d.videos ?? [...(d.video ? [{ key: d.video.key, size: d.video.size }] : []), ...(d.videoUrl ? [{ url: d.videoUrl }] : [])];
+const mediaKeys = (d: ProjectData) => [...d.images.map((m) => m.key), ...vidsOf(d).flatMap((v) => (v.key ? [v.key] : []))];
 
 async function exists(key: string) {
   try {
@@ -229,12 +239,18 @@ async function guard(ip: string, outcome?: "fail" | "ok"): Promise<number> {
 
 function out(r: Row) {
   const d = r.data;
+  const videos = vidsOf(d).map((v) => (v.key ? { src: MEDIA_BASE + v.key, size: v.size ?? 0 } : { url: v.url ?? "" }));
+  const file = videos.find((v) => "src" in v) as { src: string; size: number } | undefined;
+  const link = videos.find((v) => "url" in v) as { url: string } | undefined;
   return {
     id: r.id,
     published: r.published,
     ...d,
     images: d.images.map((m) => ({ src: MEDIA_BASE + m.key, w: m.w ?? 0, h: m.h ?? 0 })),
-    video: d.video ? { src: MEDIA_BASE + d.video.key, size: d.video.size ?? 0 } : null,
+    videos,
+    // the first file / link as before, for pages that still read them
+    video: file ?? null,
+    videoUrl: link ? link.url : "",
     created: r.created_at,
     updated: r.updated_at,
   };
@@ -245,7 +261,7 @@ async function clean(input: Record<string, unknown>, old?: ProjectData): Promise
   const scope = (input.scope && typeof input.scope === "object" ? input.scope : {}) as Record<string, unknown>;
 
   const images: Media[] = [];
-  for (const m of (Array.isArray(input.images) ? input.images : []).slice(0, 60)) {
+  for (const m of (Array.isArray(input.images) ? input.images : []).slice(0, MAX_IMAGES)) {
     const key = keyOf(m);
     if (!key || !/\.(jpg|png|webp|gif|avif)$/.test(key)) continue;
     if (!known.has(key) && !(await exists(key))) continue;
@@ -253,15 +269,26 @@ async function clean(input: Record<string, unknown>, old?: ProjectData): Promise
     images.push({ key, w: Math.max(0, Math.round(Number(o.w) || 0)), h: Math.max(0, Math.round(Number(o.h) || 0)) });
   }
 
-  let video: Media | null = null;
-  const vkey = keyOf(input.video);
-  if (vkey && /\.(mp4|webm)$/.test(vkey) && (known.has(vkey) || (await exists(vkey)))) {
-    const old = input.video as Record<string, unknown>;
-    video = { key: vkey, size: Math.max(0, Math.round(Number(old.size) || 0)) };
+  // videos: the list, in its order (or, from an older page, the one file + the one link)
+  const raw: unknown[] = Array.isArray(input.videos)
+    ? input.videos
+    : [...(input.video ? [input.video] : []), ...(typeof input.videoUrl === "string" && input.videoUrl.trim() ? [{ url: input.videoUrl }] : [])];
+  const videos: Vid[] = [];
+  for (const v of raw) {
+    if (videos.length >= MAX_VIDEOS) break;
+    if (!v || typeof v !== "object") continue;
+    const o = v as Record<string, unknown>;
+    if (typeof o.url === "string" && o.url.trim()) {
+      const url = text(o.url, 300);
+      if (!VIDEO_LINK.test(url)) throw new Fail("bad_video_url", 422);
+      videos.push({ url });
+      continue;
+    }
+    const key = keyOf(o);
+    if (key && /\.(mp4|webm)$/.test(key) && (known.has(key) || (await exists(key)))) {
+      videos.push({ key, size: Math.max(0, Math.round(Number(o.size) || 0)) });
+    }
   }
-
-  const videoUrl = text(input.videoUrl, 300);
-  if (videoUrl && !/^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)\//i.test(videoUrl)) throw new Fail("bad_video_url", 422);
 
   const data: ProjectData = {
     title: pair(input.title, 140),
@@ -274,8 +301,7 @@ async function clean(input: Record<string, unknown>, old?: ProjectData): Promise
     areaUnit: input.areaUnit === "ha" ? "ha" : "m2",
     scope: { consult: !!scope.consult, design: !!scope.design, build: !!scope.build },
     images,
-    video,
-    videoUrl,
+    videos,
   };
   const published = !!input.published;
   if (!data.title.ar || !data.title.en) throw new Fail("title_required", 422);
@@ -359,7 +385,7 @@ app.get("/project", async (c) => {
   });
 });
 
-const sessionInfo = () => ({ auth: true, maxImage: MAX_IMAGE, maxVideo: MAX_VIDEO });
+const sessionInfo = () => ({ auth: true, maxImage: MAX_IMAGE, maxVideo: MAX_VIDEO, maxImages: MAX_IMAGES, maxVideos: MAX_VIDEOS });
 
 app.post("/login", async (c) => {
   if (!env.ADMIN_PASSWORD || !env.SESSION_SECRET) throw new Fail("not_configured", 500);

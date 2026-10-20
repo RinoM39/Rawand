@@ -610,6 +610,20 @@ button { font: inherit; color: inherit; }
 .vid-state.is-warn { color: var(--rw-700); }
 .vid-side .bar { width: 100%; }
 
+/* the project's videos (up to three): files and links, in their order */
+.vids { display: grid; gap: 14px; margin: 18px 0 0; padding: 0; list-style: none; }
+.vids:empty { display: none; }
+.vids .vid { margin-top: 0; }
+.vid-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding-inline: 8px; background: var(--rw-900); font: 700 12px/1 var(--font-ar); color: var(--rw-paper); }
+.vid-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.vid-link-box { display: grid; place-items: center; gap: 10px; aspect-ratio: 16 / 9; padding: 14px; background: rgba(43, 6, 12, .9); color: var(--rw-paper); text-align: center; }
+.vid-link-box svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+.vid-link-box span { font: 600 13px/1.4 var(--font-ar); opacity: .8; }
+.vid-link-row { display: flex; gap: 10px; }
+.vid-link-row input { flex: 1; min-width: 0; }
+.vid-add { margin-top: 18px; }
+.vid-full { margin-top: 18px; }
+
 .or { display: flex; align-items: center; gap: 14px; margin: 22px 0 6px; font: 700 12px/1 var(--font-ar); color: var(--rw-500); }
 .or::before,
 .or::after { content: ''; flex: 1; height: 1px; background: rgba(91, 15, 26, .16); }

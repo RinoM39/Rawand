@@ -269,7 +269,7 @@
     scope.append(el('span', 'prj-scope-label', T('نطاق عملنا', 'Our scope')), phases);
     info.append(scope);
 
-    const film = !!(p.video || p.videoUrl);
+    const film = !!((Array.isArray(p.videos) && p.videos.length) || p.video || p.videoUrl);
     const cover = p.images[0];
     const photo = el('div', 'prj-photo');
     const img = el('img');

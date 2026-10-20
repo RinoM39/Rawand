@@ -1,8 +1,8 @@
 /* =====================================================================
    RAWAND — one project (project.html?id=…)
    Reads the project from the API (window.RAWAND_API → /project) and fills the sheet: title block, cover,
-   Arabic + English text (the page's language first, the other as the accent), the film (uploaded file, or a YouTube/Vimeo link that only loads
-   on click), the photographs and a photo viewer. Photos are "developed" like the home-page
+   Arabic + English text (the page's language first, the other as the accent), the films (up to three: uploaded
+   files, and/or YouTube/Vimeo links that only load on click), the photographs and a photo viewer. Photos are "developed" like the home-page
    sheets: a pen line wipes them in, then the burgundy print turns to colour.
    gsap / ScrollTrigger are optional (without them, or with reduced motion, nothing moves).
    ===================================================================== */
@@ -93,7 +93,10 @@
   function render({ project: p, total, prev, next }) {
     const imgs = p.images || [];
     const cover = imgs[0];
-    const film = !!(p.video || p.videoUrl);
+    // the films in order (a project saved before the list: its one file and/or one link)
+    const films = (Array.isArray(p.videos) ? p.videos : [...(p.video ? [p.video] : []), ...(p.videoUrl ? [{ url: p.videoUrl }] : [])])
+      .filter(v => v.src || (v.url && embedUrl(v.url)));
+    const film = films.length > 0;
 
     document.title = `${pick(p.title)} | ${T('روند RAWAND', 'RAWAND')}`;
     if (pick(p.summary)) document.querySelector('meta[name="description"]').setAttribute('content', pick(p.summary));
@@ -150,7 +153,7 @@
       coverImg.src = media(cover.src);
       coverImg.alt = pick(p.title);
     } else $('#pjCover').hidden = true;
-    $('#pjCapL').textContent = `${pad2(imgs.length)} ${imgs.length === 1 ? 'Photograph' : 'Photographs'}${film ? ' · Film' : ''}`;
+    $('#pjCapL').textContent = `${pad2(imgs.length)} ${imgs.length === 1 ? 'Photograph' : 'Photographs'}${film ? (films.length > 1 ? ` · ${films.length} Films` : ' · Film') : ''}`;
     $('#pjCapR').textContent = [p.location.en, p.year].filter(Boolean).join(' · ');
 
     // text: Arabic and English side by side (the short summary if there is no full text)
@@ -164,34 +167,46 @@
     $('#pjAbout').classList.toggle('is-single', !ar || !en);
     if (EN) $('#pjTextAr').before($('#pjTextEn'));     // English reads first on the English page
 
-    // film: the uploaded file, or the link — loaded only when asked for
-    const frame = $('#pjFilmFrame');
-    if (p.video) {
-      const v = el('video');
-      v.controls = true;
-      v.preload = 'metadata';
-      v.playsInline = true;
-      if (cover) v.poster = media(cover.src);
-      v.src = media(p.video.src);
-      frame.append(v);
+    // films: the uploaded files play in place; a link loads its player only when asked for
+    const first = $('#pjFilmFrame');
+    films.forEach((m, i) => {
+      const frame = i ? el('div', 'pj-film-frame') : first;
+      if (i) $('#pjFilm').append(frame);
+      if (m.src) {
+        const v = el('video');
+        v.controls = true;
+        v.preload = 'metadata';
+        v.playsInline = true;
+        if (cover) v.poster = media(cover.src);
+        v.src = media(m.src);
+        frame.append(v);
+      } else {
+        const play = el('button', 'pj-play');
+        play.type = 'button';
+        if (cover) play.style.backgroundImage = `url("${media(cover.src)}")`;
+        const n = films.length > 1 ? ' ' + digits(i + 1) : '';
+        const label = el('span', null, T('تشغيل الفيلم', 'Play the film') + n);
+        label.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg>');
+        play.append(label);
+        play.addEventListener('click', () => {
+          const f = el('iframe');
+          f.src = embedUrl(m.url);
+          f.title = pick(p.title);
+          f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
+          f.allowFullscreen = true;
+          play.replaceWith(f);
+        });
+        frame.append(play);
+      }
+    });
+    if (film) {
       $('#pjFilm').hidden = false;
-    } else if (p.videoUrl && embedUrl(p.videoUrl)) {
-      const play = el('button', 'pj-play');
-      play.type = 'button';
-      if (cover) play.style.backgroundImage = `url("${media(cover.src)}")`;
-      const label = el('span', null, T('تشغيل الفيلم', 'Play the film'));
-      label.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg>');
-      play.append(label);
-      play.addEventListener('click', () => {
-        const f = el('iframe');
-        f.src = embedUrl(p.videoUrl);
-        f.title = pick(p.title);
-        f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
-        f.allowFullscreen = true;
-        play.replaceWith(f);
-      });
-      frame.append(play);
-      $('#pjFilm').hidden = false;
+      if (films.length > 1) {
+        const h2 = $('#pjFilmTitle');
+        h2.firstChild.textContent = T('أفلام المشروع ', 'Project films ');
+        const small = h2.querySelector('small');
+        if (small) small.textContent = EN ? 'أفلام' : 'Films';
+      }
     }
 
     // photographs (the cover is the first in the viewer, but is not repeated here)
