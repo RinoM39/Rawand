@@ -12,6 +12,8 @@
   'use strict';
 
   const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
+  // stored photo/video addresses → the address this site fetches them from (js/config.js)
+  const media = u => (typeof window.RAWAND_MEDIA === 'function' ? window.RAWAND_MEDIA(u) : u);
   const TOKEN_KEY = 'rw-admin';
   const LOGO = window.RAWAND_LOGO;
   const NS = 'http://www.w3.org/2000/svg';
@@ -141,7 +143,7 @@
     const qs = opts.params ? '?' + new URLSearchParams(opts.params) : '';
     let res;
     try {
-      res = await fetch(`${API}/${action}${qs}`, {
+      res = await window.RAWAND_FETCH(`/${action}${qs}`, {
         method: opts.body !== undefined ? 'POST' : 'GET',
         headers,
         body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
@@ -196,7 +198,7 @@
     $('#vidHint').textContent = `MP4 · MOV · WEBM — حتى ${size(S.maxVideo)}. الأفضل MP4 ليعمل على كل الأجهزة.`;
   }
 
-  /* ------------------------------------------------------------ uploads: straight to Neon storage */
+  /* ------------------------------------------------------------ uploads: to Neon storage (through the site's /media) */
 
   // PUT the file to the signed URL the API gave us, with progress
   function put(url, headers, file, onProgress, signal) {
@@ -220,16 +222,29 @@
   const typeOf = file => file.type || TYPES[(file.name.split('.').pop() || '').toLowerCase()] || '';
 
   // 1) ask the API for a signed URL  2) PUT the file  3) the API checks what actually arrived
+  // The PUT goes through the site's own /media first (it works wherever the site does); if that way refuses
+  // the file (too big for the proxy, say) the storage address itself is tried.
   async function upload(file, kind, onProgress, signal) {
     const ticket = await call('upload', { body: { kind, type: typeOf(file), size: file.size } });
-    for (let tries = 0; ; tries++) {
-      try {
-        await put(ticket.url, ticket.headers, file, onProgress, signal);
-        break;
-      } catch (e) {
-        if (e.code !== 'network' || tries >= 3) throw e;
-        await wait(1000 * (tries + 1));
+    const ways = [...new Set([media(ticket.url), ticket.url])];
+    for (let w = 0; w < ways.length; w++) {
+      let done = false;
+      for (let tries = 0; ; tries++) {
+        try {
+          await put(ways[w], ticket.headers, file, onProgress, signal);
+          done = true;
+          break;
+        } catch (e) {
+          if (e.code === 'aborted') throw e;
+          const last = w === ways.length - 1;
+          if (e.code !== 'network' || tries >= (last ? 3 : 1)) {
+            if (last) throw e;
+            break;
+          }
+          await wait(1000 * (tries + 1));
+        }
       }
+      if (done) break;
     }
     if (signal && signal.aborted) throw new ApiError('aborted');
     return call('upload/check', { body: { key: ticket.key, kind } });
@@ -473,7 +488,7 @@
       const open = e => { if (!e.target.closest('button, a')) location.hash = '#/edit/' + encodeURIComponent(p.id); };
       return h('li', { class: 'pitem', dataset: { id: p.id }, onclick: open },
         h('span', { class: 'pitem-num' }, pad2(i + 1)),
-        h('span', { class: 'pitem-thumb' }, cover ? h('img', { src: cover.src, alt: '', loading: 'lazy' }) : null),
+        h('span', { class: 'pitem-thumb' }, cover ? h('img', { src: media(cover.src), alt: '', loading: 'lazy' }) : null),
         h('div', { class: 'pitem-main' },
           h('h2', { class: 'pitem-title' }, p.title.ar || '—', h('span', { class: 'pitem-en', lang: 'en', dir: 'ltr' }, p.title.en)),
           h('p', { class: 'pitem-meta' }, meta)),
@@ -708,7 +723,7 @@
       draggable: 'true',
       dataset: { key: t.key },
     },
-      h('img', { src: t.preview || t.src, alt: '', draggable: 'false' }),
+      h('img', { src: t.preview || media(t.src), alt: '', draggable: 'false' }),
       i === 0 ? h('span', { class: 'tile-badge' }, 'الغلاف') : h('span', { class: 'tile-num' }, arabic(i + 1)),
       t.status === 'error' ? h('div', { class: 'tile-msg' }, t.error,
         t.file ? h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => uploadTile(t) }, 'إعادة المحاولة') : null) : null,
@@ -835,7 +850,7 @@
     $('#vidCard .vid-retry')?.remove();
     if (!v) { $('#vidPlayer').removeAttribute('src'); return; }
     const player = $('#vidPlayer');
-    const src = v.preview || v.src;
+    const src = v.preview || media(v.src);
     if (player.getAttribute('src') !== src) player.src = src;
     $('#vidName').textContent = v.name || '';
     $('#vidBar').hidden = v.status !== 'uploading';

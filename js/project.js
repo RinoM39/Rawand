@@ -38,12 +38,14 @@
   const id = new URLSearchParams(location.search).get('id') || '';
   // signed in on /auth (same browser)? then drafts can be previewed too
   const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
+  // stored photo/video addresses → the address this site fetches them from (js/config.js)
+  const media = u => (typeof window.RAWAND_MEDIA === 'function' ? window.RAWAND_MEDIA(u) : u);
   const headers = {};
   try {
     const t = JSON.parse(localStorage.getItem('rw-admin') || 'null');
     if (t && t.token && t.exp > Date.now()) headers.Authorization = 'Bearer ' + t.token;
   } catch (e) { /* no token */ }
-  (API ? fetch(API + '/project?id=' + encodeURIComponent(id), { cache: 'no-store', headers }) : Promise.reject(new Error('no API')))
+  (API ? window.RAWAND_FETCH('/project?id=' + encodeURIComponent(id), { cache: 'no-store', headers }) : Promise.reject(new Error('no API')))
     .then(r => r.json().then(d => (r.ok && d.ok ? d : Promise.reject(d))))
     .then(render)
     .catch(missing);
@@ -145,7 +147,7 @@
         coverBtn.style.setProperty('--ar', Math.max(4 / 3, Math.min(21 / 9, cover.w / cover.h)));
       }
       if (motion) gsap.set(coverBtn, { '--wipe': 1, '--ink': 1 });
-      coverImg.src = cover.src;
+      coverImg.src = media(cover.src);
       coverImg.alt = pick(p.title);
     } else $('#pjCover').hidden = true;
     $('#pjCapL').textContent = `${pad2(imgs.length)} ${imgs.length === 1 ? 'Photograph' : 'Photographs'}${film ? ' · Film' : ''}`;
@@ -169,14 +171,14 @@
       v.controls = true;
       v.preload = 'metadata';
       v.playsInline = true;
-      if (cover) v.poster = cover.src;
-      v.src = p.video.src;
+      if (cover) v.poster = media(cover.src);
+      v.src = media(p.video.src);
       frame.append(v);
       $('#pjFilm').hidden = false;
     } else if (p.videoUrl && embedUrl(p.videoUrl)) {
       const play = el('button', 'pj-play');
       play.type = 'button';
-      if (cover) play.style.backgroundImage = `url("${cover.src}")`;
+      if (cover) play.style.backgroundImage = `url("${media(cover.src)}")`;
       const label = el('span', null, T('تشغيل الفيلم', 'Play the film'));
       label.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg>');
       play.append(label);
@@ -205,7 +207,7 @@
       img.loading = 'lazy';
       img.decoding = 'async';
       img.alt = '';
-      img.src = m.src;
+      img.src = media(m.src);
       btn.append(img, el('i', 'pj-scan'));
       li.append(btn);
       grid.append(li);
@@ -220,7 +222,7 @@
         a.href = 'project.html?id=' + encodeURIComponent(q.id);
         if (q.cover) {
           const im = el('img');
-          im.src = q.cover;
+          im.src = media(q.cover);
           im.alt = '';
           im.loading = 'lazy';
           a.append(im);
@@ -254,7 +256,7 @@
     lb.setAttribute('data-lenis-prevent', '');
     const show = i => {
       at = (i + imgs.length) % imgs.length;
-      img.src = imgs[at].src;
+      img.src = media(imgs[at].src);
       $('#lbCount').textContent = `${digits(pad2(at + 1))} / ${digits(pad2(imgs.length))}`;
     };
     document.addEventListener('click', e => {

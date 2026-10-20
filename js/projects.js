@@ -273,7 +273,7 @@
     const cover = p.images[0];
     const photo = el('div', 'prj-photo');
     const img = el('img');
-    img.src = cover.src;
+    img.src = (typeof window.RAWAND_MEDIA === 'function' ? window.RAWAND_MEDIA(cover.src) : cover.src);
     img.alt = '';
     img.decoding = 'async';
     if (i > 1) img.loading = 'lazy';
@@ -312,7 +312,7 @@
   };
   setTimeout(begin, 2500);
   const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
-  (API ? fetch(API + '/projects', { cache: 'no-store' }) : Promise.reject(new Error('no API')))
+  (API ? window.RAWAND_FETCH('/projects', { cache: 'no-store' }) : Promise.reject(new Error('no API')))
     .then(r => (r.ok ? r.json() : null))
     .then(d => {
       const list = d && d.ok && Array.isArray(d.projects) ? d.projects.filter(p => p.images && p.images.length) : [];

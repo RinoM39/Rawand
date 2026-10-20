@@ -4,6 +4,10 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://br-lingering-morning-b1edvcfd-api.compute.c-5.eu-central-1.aws.neon.tech/:path*" },
+    { "source": "/media/:path*", "destination": "https://br-lingering-morning-b1edvcfd.storage.c-5.eu-central-1.aws.neon.tech/media/:path*" }
+  ],
   "headers": [
     { "source": "/auth/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] },
     { "source": "/auth", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
