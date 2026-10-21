@@ -273,7 +273,8 @@
     const cover = p.images[0];
     const photo = el('div', 'prj-photo');
     const img = el('img');
-    img.src = (typeof window.RAWAND_MEDIA === 'function' ? window.RAWAND_MEDIA(cover.src) : cover.src);
+    if (typeof window.RAWAND_PHOTO === 'function') window.RAWAND_PHOTO(img, cover.src, [384, 640, 960, 1280], '(max-width: 900px) 90vw, 58vw');
+    else img.src = cover.src;
     img.alt = '';
     img.decoding = 'async';
     if (i > 1) img.loading = 'lazy';
@@ -395,12 +396,15 @@
     // Each sheet's drafting follows its place on screen: rising into view, then sliding to the middle
     // (or, for the last sheets that never reach the middle, to where the slide stops).
     const done = sheets.map(() => -1);
+    let D = dist();                                     // measured on refresh, not every frame
     function update() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const ahead = dist() - Math.abs(gsap.getProperty(track, 'x'));
-      sheets.forEach((li, i) => {
-        const r = li.getBoundingClientRect();
+      const x = gsap.getProperty(track, 'x');
+      const ahead = D - Math.abs(x);
+      // read every sheet's place first, then move the drawings (reads after writes would force a layout each)
+      const rects = sheets.map(li => li.getBoundingClientRect());
+      rects.forEach((r, i) => {
         const edge = EN ? vw - r.left : r.right;       // how far the sheet has come in from the side it enters
         const goal = Math.min((vw + r.width) * .46, (edge + ahead) * .92);
         const p = Math.min(clamp((vh - r.top) / (vh * .55)), clamp(edge / goal));
@@ -410,15 +414,27 @@
         }
       });
       fill.style.transform = `scaleX(${slide.progress()})`;
-      paper.style.backgroundPosition = `${gsap.getProperty(track, 'x')}px 0`;
+      paper.style.backgroundPosition = `${x}px 0`;
     }
-    // runs while any part of the section (pin spacer included) is on screen — measured directly,
-    // since a trigger made here can be measured before the pin's own room is added below it
+    // runs only while the section (pin spacer included) is on screen, and only when something moved:
+    // the page's scroll, or the track still easing after it (scrub)
+    let inView = false;
+    let lastX = NaN;
+    let scrolled = true;               // a scroll flag (reading window.scrollY each frame can force a layout)
+    const onScroll = () => { scrolled = true; };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    const io = new IntersectionObserver(([en]) => { inView = en.isIntersecting; lastX = NaN; });
+    io.observe(root);
     const tick = () => {
-      const r = root.getBoundingClientRect();
-      if (r.bottom > 0 && r.top < window.innerHeight) update();
+      if (!inView) return;
+      const x = gsap.getProperty(track, 'x');
+      if (x === lastX && !scrolled) return;
+      lastX = x;
+      scrolled = false;
+      update();
     };
-    ScrollTrigger.addEventListener('refresh', update);
+    const onRefresh = () => { D = dist(); lastX = NaN; update(); };
+    ScrollTrigger.addEventListener('refresh', onRefresh);
     gsap.ticker.add(tick);
     update();
 
@@ -436,7 +452,9 @@
 
     return () => {
       gsap.ticker.remove(tick);
-      ScrollTrigger.removeEventListener('refresh', update);
+      io.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      ScrollTrigger.removeEventListener('refresh', onRefresh);
       track.removeEventListener('focusin', onFocus);
       root.classList.remove('is-rail');
       paper.style.backgroundPosition = '';

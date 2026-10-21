@@ -460,15 +460,23 @@ window.RawandAxo = (() => {
 
       // at rest the structure inside the skin steps back; what is outside it or in the cut-away stays solid
       const ghost = mix(mix(1, .3, clamp((st.draw - .45) / .4)), 1, E);
+      // (the same projection as P(), done inline: no arrays per point, ~1500 segments a frame)
+      const lifts = [LIFT[0] * E, LIFT[1] * E, LIFT[2] * E];
+      const ccy = c.cy, csy = c.sy, ccp = c.cp, csp = c.sp;
       for (const sg of segs) {
         const k = clamp((st.draw - sg.t0) / (sg.t1 - sg.t0));
         if (k <= 0) continue;
-        const a = P(sg.a, sg.L);
-        const end = k < 1 ? [mix(sg.a[0], sg.b[0], k), mix(sg.a[1], sg.b[1], k), mix(sg.a[2], sg.b[2], k)] : sg.b;
-        const b = P(end, sg.L);
-        const depth = clamp(.62 + (a[2] + b[2]) * .024, .3, 1);
+        const A = sg.a, B = sg.b, lift = lifts[sg.L];
+        const ex = k < 1 ? mix(A[0], B[0], k) : B[0];
+        const ey = k < 1 ? mix(A[1], B[1], k) : B[1];
+        const ez = k < 1 ? mix(A[2], B[2], k) : B[2];
+        let x1 = A[0] * ccy - A[2] * csy, z1 = A[0] * csy + A[2] * ccy, y = A[1] + lift;
+        const ax = ox + s * x1, ay = oy + s * -(y * ccp - z1 * csp), az = y * csp + z1 * ccp;
+        x1 = ex * ccy - ez * csy; z1 = ex * csy + ez * ccy; y = ey + lift;
+        const bx = ox + s * x1, by = oy + s * -(y * ccp - z1 * csp), bz = y * csp + z1 * ccp;
+        const depth = clamp(.62 + (az + bz) * .024, .3, 1);
         const al = sg.al * depth * facing(sg.n) * st.emph[sg.L] * (sg.L === 0 && !sg.ng ? ghost : 1);
-        push(sg.w, al, sg.dash, a[0], a[1], b[0], b[1]);
+        push(sg.w, al, sg.dash, ax, ay, bx, by);
       }
 
       // exploded-view guide lines at the four corners

@@ -188,12 +188,24 @@
   const aim = { yaw: 0, pitch: 0, cursor: 0 };
   let heroVisible = true;
 
+  // the value tags follow their layers; their styles are written only when they change
+  const tagSet = layerTags.map(() => ({ a: -1, pe: -1, x: NaN, y: NaN }));
   function placeTags(out) {
     layerTags.forEach((tag, i) => {
       const a = out.tagAlpha[i] * (.3 + .7 * st.emph[i]);
-      tag.style.opacity = a;
-      tag.style.pointerEvents = a > .6 ? 'auto' : 'none';
-      if (out.tagAlpha[i] > 0) tag.style.transform = `translate3d(${out.tagX}px, ${out.anchors[i][1]}px, 0) translateY(-50%)`;
+      const was = tagSet[i];
+      if (a !== was.a) { tag.style.opacity = a; was.a = a; }
+      const pe = a > .6 ? 1 : 0;
+      if (pe !== was.pe) { tag.style.pointerEvents = pe ? 'auto' : 'none'; was.pe = pe; }
+      if (out.tagAlpha[i] > 0) {
+        const x = out.tagX;
+        const y = out.anchors[i][1];
+        if (x !== was.x || y !== was.y) {
+          tag.style.transform = `translate3d(${x}px, ${y}px, 0) translateY(-50%)`;
+          was.x = x;
+          was.y = y;
+        }
+      }
     });
   }
 
@@ -203,6 +215,22 @@
     placeTags(axo.render());
   }
 
+  // When the only thing moving is the slow sway (well under a degree a second), the building is
+  // redrawn every other frame; the pointer, the scroll and every tween still get every frame.
+  const seen = new Float64Array(12).fill(NaN);
+  let busyUntil = 0;
+  let skip = false;
+  let scrolled = false;               // (a scroll flag, not window.scrollY: reading that can force a layout)
+  window.addEventListener('scroll', () => { scrolled = true; }, { passive: true });
+  // has anything but the sway changed since the last frame?
+  function moved() {
+    const now = [st.draw, st.explode, st.grow, st.tags, st.focus, st.follow, st.zoom, st.orbit,
+      st.emph[0], st.emph[1], st.emph[2], st.tagW];
+    let changed = scrolled;
+    scrolled = false;
+    for (let k = 0; k < 12; k++) if (now[k] !== seen[k]) { seen[k] = now[k]; changed = true; }
+    return changed;
+  }
   function tick(time) {
     if (!heroVisible) return;
     st.time = time;
@@ -210,6 +238,9 @@
     st.yaw += (aim.yaw + sway - st.yaw) * .06;
     st.pitch += (aim.pitch - st.pitch) * .06;
     st.cursor += (aim.cursor - st.cursor) * .12;
+    if (moved()) busyUntil = time + .5;
+    skip = !skip;
+    if (skip && time > busyUntil) return;
     renderHero();
   }
 
@@ -217,6 +248,7 @@
     if (!finePointer) return;
     const canvas = $('#heroCanvas');
     hero.addEventListener('pointermove', e => {
+      busyUntil = gsap.ticker.time + 1.5;
       const r = canvas.getBoundingClientRect();
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
@@ -225,7 +257,7 @@
       aim.pitch = (y / r.height - .5) * 7 * DEG;
       aim.cursor = e.target.closest('a, button, .layer-tag') ? 0 : 1;
     });
-    hero.addEventListener('pointerleave', () => { aim.yaw = 0; aim.pitch = 0; aim.cursor = 0; });
+    hero.addEventListener('pointerleave', () => { aim.yaw = 0; aim.pitch = 0; aim.cursor = 0; busyUntil = gsap.ticker.time + 1.5; });
   }
 
   function setHeroHidden() {

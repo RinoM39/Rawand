@@ -15,6 +15,9 @@
   const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
   // stored photo/video addresses → the address this site fetches them from (js/config.js)
   const media = u => (typeof window.RAWAND_MEDIA === 'function' ? window.RAWAND_MEDIA(u) : u);
+  // a small copy for thumbnails (the original if the resized one fails)
+  const thumb = u => (typeof window.RAWAND_PHOTO_URL === 'function' ? window.RAWAND_PHOTO_URL(u, 384) : media(u));
+  const thumbBack = u => function back(e) { e.target.removeEventListener('error', back); e.target.src = media(u); };
   const TOKEN_KEY = 'rw-admin';
   const LOGO = window.RAWAND_LOGO;
   const NS = 'http://www.w3.org/2000/svg';
@@ -497,7 +500,7 @@
       const open = e => { if (!e.target.closest('button, a')) location.hash = '#/edit/' + encodeURIComponent(p.id); };
       return h('li', { class: 'pitem', dataset: { id: p.id }, onclick: open },
         h('span', { class: 'pitem-num' }, pad2(i + 1)),
-        h('span', { class: 'pitem-thumb' }, cover ? h('img', { src: media(cover.src), alt: '', loading: 'lazy' }) : null),
+        h('span', { class: 'pitem-thumb' }, cover ? h('img', { src: thumb(cover.src), alt: '', loading: 'lazy', onerror: thumbBack(cover.src) }) : null),
         h('div', { class: 'pitem-main' },
           h('h2', { class: 'pitem-title' }, p.title.ar || '—', h('span', { class: 'pitem-en', lang: 'en', dir: 'ltr' }, p.title.en)),
           h('p', { class: 'pitem-meta' }, meta)),
@@ -736,7 +739,7 @@
       draggable: 'true',
       dataset: { key: t.key },
     },
-      h('img', { src: t.preview || media(t.src), alt: '', draggable: 'false' }),
+      h('img', { src: t.preview || thumb(t.src), alt: '', draggable: 'false', onerror: t.preview ? null : thumbBack(t.src) }),
       i === 0 ? h('span', { class: 'tile-badge' }, 'الغلاف') : h('span', { class: 'tile-num' }, arabic(i + 1)),
       t.status === 'error' ? h('div', { class: 'tile-msg' }, t.error,
         t.file ? h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => uploadTile(t) }, 'إعادة المحاولة') : null) : null,

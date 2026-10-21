@@ -174,9 +174,10 @@
     const lat = ORIGIN.lat - (y - view.h / 2) / view.h * .012;
     const lng = ORIGIN.lng + (x - view.w / 2) / view.w * .02;
     const el = ORIGIN.el + height(x, y, st.t) * 6;
-    ro.lat.textContent = lat.toFixed(4);
-    ro.lng.textContent = lng.toFixed(4);
-    ro.el.textContent = (el >= 0 ? '+' : '') + el.toFixed(2);
+    const put = (node, text) => { if (node.textContent !== text) node.textContent = text; };
+    put(ro.lat, lat.toFixed(4));
+    put(ro.lng, lng.toFixed(4));
+    put(ro.el, (el >= 0 ? '+' : '') + el.toFixed(2));
   }
 
   new ResizeObserver(resize).observe(frame);
@@ -202,10 +203,15 @@
   /* ------------------------------------------------------------ loop */
 
   let last = performance.now();
+  let skip = false;
+  const wrote = { core: '', px: '', py: '' };
   function frameStep(now) {
-    const dt = Math.min(.05, (now - last) / 1000);
+    if (!visible) { last = now; return; }
+    // nobody pointing at it: the slow walk of the hill is drawn every other frame (dt keeps its speed)
+    skip = !skip;
+    if (skip && !ptr.in && !st.hotTarget && st.hot < .001) return;
+    const dt = Math.min(.1, (now - last) / 1000);
     last = now;
-    if (!visible) return;
     st.t += dt * .55;
 
     // where the hill wants to be: the pointer, the pin while it's hovered, or a slow walk round the pin
@@ -236,9 +242,13 @@
     }
     st.pull.x += (px - st.pull.x) * Math.min(1, dt * 8);
     st.pull.y += (py - st.pull.y) * Math.min(1, dt * 8);
-    core.style.transform = `translate(${st.pull.x.toFixed(2)}px, ${st.pull.y.toFixed(2)}px)`;
-    frame.style.setProperty('--px', (home.x + st.pull.x).toFixed(1) + 'px');
-    frame.style.setProperty('--py', (home.y + st.pull.y).toFixed(1) + 'px');
+    // styles only when they change (they rest while nobody points at the pin)
+    const tf = `translate(${st.pull.x.toFixed(2)}px, ${st.pull.y.toFixed(2)}px)`;
+    const vx = (home.x + st.pull.x).toFixed(1) + 'px';
+    const vy = (home.y + st.pull.y).toFixed(1) + 'px';
+    if (tf !== wrote.core) core.style.transform = wrote.core = tf;
+    if (vx !== wrote.px) frame.style.setProperty('--px', wrote.px = vx);
+    if (vy !== wrote.py) frame.style.setProperty('--py', wrote.py = vy);
 
     if (ptr.in) readout(ptr.x, ptr.y);
     else readout(hill.x, hill.y);

@@ -40,12 +40,16 @@
   const API = String(window.RAWAND_API || '').replace(/\/+$/, '');
   // stored photo/video addresses → the address this site fetches them from (js/config.js)
   const media = u => (typeof window.RAWAND_MEDIA === 'function' ? window.RAWAND_MEDIA(u) : u);
+  // the same photo resized to about the width it is shown (the viewer keeps the original)
+  const sized = u => (typeof window.RAWAND_PHOTO_URL === 'function' ? w => window.RAWAND_PHOTO_URL(u, w) : () => media(u));
+  const photo = (img, u, widths, sizes) => (typeof window.RAWAND_PHOTO === 'function' ? window.RAWAND_PHOTO(img, u, widths, sizes) : (img.src = media(u)));
   const headers = {};
   try {
     const t = JSON.parse(localStorage.getItem('rw-admin') || 'null');
     if (t && t.token && t.exp > Date.now()) headers.Authorization = 'Bearer ' + t.token;
   } catch (e) { /* no token */ }
-  (API ? window.RAWAND_FETCH('/project?id=' + encodeURIComponent(id), { cache: 'no-store', headers }) : Promise.reject(new Error('no API')))
+  const fresh = headers.Authorization ? '&t=' + Date.now() : '';     // signed in: past the CDN's minute
+  (API ? window.RAWAND_FETCH('/project?id=' + encodeURIComponent(id) + fresh, { cache: 'no-store', headers }) : Promise.reject(new Error('no API')))
     .then(r => r.json().then(d => (r.ok && d.ok ? d : Promise.reject(d))))
     .then(render)
     .catch(missing);
@@ -150,7 +154,7 @@
         coverBtn.style.setProperty('--ar', Math.max(4 / 3, Math.min(21 / 9, cover.w / cover.h)));
       }
       if (motion) gsap.set(coverBtn, { '--wipe': 1, '--ink': 1 });
-      coverImg.src = media(cover.src);
+      photo(coverImg, cover.src, [640, 960, 1280, 1920], '(max-width: 900px) 100vw, 86vw');
       coverImg.alt = pick(p.title);
     } else $('#pjCover').hidden = true;
     $('#pjCapL').textContent = `${pad2(imgs.length)} ${imgs.length === 1 ? 'Photograph' : 'Photographs'}${film ? (films.length > 1 ? ` · ${films.length} Films` : ' · Film') : ''}`;
@@ -179,13 +183,13 @@
         v.controls = true;
         v.preload = 'metadata';
         v.playsInline = true;
-        if (cover) v.poster = media(cover.src);
+        if (cover) v.poster = sized(cover.src)(1280);
         v.src = media(m.src);
         frame.append(v);
       } else {
         const play = el('button', 'pj-play');
         play.type = 'button';
-        if (cover) play.style.backgroundImage = `url("${media(cover.src)}")`;
+        if (cover) play.style.backgroundImage = `url("${sized(cover.src)(1280)}")`;
         const n = films.length > 1 ? ' ' + digits(i + 1) : '';
         const label = el('span', null, T('تشغيل الفيلم', 'Play the film') + n);
         label.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg>');
@@ -224,7 +228,7 @@
       img.loading = 'lazy';
       img.decoding = 'async';
       img.alt = '';
-      img.src = media(m.src);
+      photo(img, m.src, [384, 640, 960, 1280], '(max-width: 700px) 92vw, (max-width: 1100px) 46vw, 31vw');
       btn.append(img, el('i', 'pj-scan'));
       li.append(btn);
       grid.append(li);
@@ -239,7 +243,7 @@
         a.href = 'project.html?id=' + encodeURIComponent(q.id);
         if (q.cover) {
           const im = el('img');
-          im.src = media(q.cover);
+          photo(im, q.cover, [384, 640], '(max-width: 700px) 40vw, 320px');
           im.alt = '';
           im.loading = 'lazy';
           a.append(im);

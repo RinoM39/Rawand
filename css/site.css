@@ -166,3 +166,9 @@
   .foot-cols { grid-template-columns: minmax(0, 1fr); gap: 32px; }
   .foot-cta { width: 116px; font-size: 14px; }
 }
+
+/* endless animations rest while off screen (js/site.js toggles .is-away) */
+.is-away,
+.is-away *,
+.is-away *::before,
+.is-away *::after { animation-play-state: paused !important; }

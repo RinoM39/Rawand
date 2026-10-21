@@ -13,6 +13,14 @@
   const NS = 'http://www.w3.org/2000/svg';
   const $ = (s, root = document) => root.querySelector(s);
 
+  // Endless CSS animations (the scroll hint, the ring round the "start on site" pin, the projects nudge,
+  // the survey pulse on the contact page) rest while they are off screen: nobody sees them there, but
+  // the browser would still work on them every frame. Back on screen they carry on where they were.
+  if ('IntersectionObserver' in window) {
+    const away = new IntersectionObserver(list => list.forEach(e => e.target.classList.toggle('is-away', !e.isIntersecting)));
+    document.querySelectorAll('.hero-scroll, .cta-pin-ring, .prj-hint, .contact-survey').forEach(el => away.observe(el));
+  }
+
   // horizontal lockup: mark + روند + RAWAND
   function buildLockup(svg) {
     if (!LOGO || !svg || svg.childElementCount) return;

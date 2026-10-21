@@ -150,7 +150,7 @@
       rext: (d.w - d.ax) / u,
       box: { x: X - d.ax / u, y: -d.top / u, w: d.w / u, h: d.h / u },
       wash: img('wash'),
-      photo: img('photo'),
+      photo: null,           // the lens photograph: fetched on the first mouse move (js below)
     };
   });
   let toneAsked = false;
@@ -211,7 +211,7 @@
     view.dpr = Math.min(window.devicePixelRatio || 1, 2);
     view.mobile = view.w < 760;
     view.top = head.offsetTop + head.offsetHeight;
-    for (const c of [canvas, layer, soak]) {
+    for (const c of [canvas, layer]) {
       c.width = Math.round(view.w * view.dpr);
       c.height = Math.round(view.h * view.dpr);
     }
@@ -345,9 +345,20 @@
       c.globalAlpha = 1;
       return;
     }
+    // the figure's box on the canvas, in device pixels: the soak sheet is only that big
+    const T = c.getTransform();
+    const rx = Math.max(0, Math.floor(T.a * (b.x - 1) + T.e));
+    const ry = Math.max(0, Math.floor(T.d * (b.y - 1) + T.f));
+    const rw = Math.min(c.canvas.width, Math.ceil(T.a * (b.x + b.w + 1) + T.e)) - rx;
+    const rh = Math.min(c.canvas.height, Math.ceil(T.d * (b.y + b.h + 1) + T.f)) - ry;
+    if (rw <= 0 || rh <= 0) return;
+    if (soak.width < rw || soak.height < rh) {
+      soak.width = Math.max(soak.width, rw);
+      soak.height = Math.max(soak.height, rh);
+    }
     sctx.setTransform(1, 0, 0, 1, 0, 0);
-    sctx.clearRect(0, 0, soak.width, soak.height);
-    sctx.setTransform(c.getTransform());
+    sctx.clearRect(0, 0, rw, rh);
+    sctx.setTransform(T.a, T.b, T.c, T.d, T.e - rx, T.f - ry);
     sctx.globalAlpha = a * (.4 + .6 * w);
     sctx.drawImage(f.wash, b.x, b.y, b.w, b.h);
     sctx.globalAlpha = 1;
@@ -361,24 +372,37 @@
     sctx.globalCompositeOperation = 'source-over';
     c.save();
     c.setTransform(1, 0, 0, 1, 0, 0);
-    c.drawImage(soak, 0, 0);
+    c.drawImage(soak, 0, 0, rw, rh, rx, ry, rw, rh);
     c.restore();
   }
 
   // pen paths: the drawn part of each, batched by width step
   function drawPen(c, list, prog, col, a, px, zf) {
     if (a <= .01) return;
-    const bins = [];
-    for (const p of list) {
-      const t = prog(p);
-      if (t > 0) tracePart(bins, p, t);
+    // paths that are fully drawn join the group's kept paths once; only the ones still being drawn are
+    // traced again each frame (widths are set at stroke time, so the kept paths serve any zoom)
+    const acc = list.acc || (list.acc = { bins: [], done: new Uint8Array(list.length), left: list.length });
+    let live = null;
+    if (acc.left) {
+      live = [];
+      for (let k = 0; k < list.length; k++) {
+        if (acc.done[k]) continue;
+        const t = prog(list[k]);
+        if (t >= 1) {
+          tracePart(acc.bins, list[k], 1);
+          acc.done[k] = 1;
+          acc.left--;
+        } else if (t > 0) tracePart(live, list[k], t);
+      }
     }
     c.strokeStyle = rgba(col, Math.min(1, a));
-    bins.forEach((path, L) => {
-      if (!path) return;
-      c.lineWidth = LEVELS[L] * px * zf;
-      c.stroke(path);
-    });
+    for (const bins of live ? [acc.bins, live] : [acc.bins]) {
+      bins.forEach((path, L) => {
+        if (!path) return;
+        c.lineWidth = LEVELS[L] * px * zf;
+        c.stroke(path);
+      });
+    }
   }
 
   // a stroke with a thickness: the outline of its drawn part (0..t), with round ends
@@ -462,42 +486,51 @@
       }
       c.restore();
     }
-    // strokes, batched by alpha
-    const buckets = new Map();
-    for (const s of F.strokes) {
-      const t = prog(s.ord);
-      if (t <= 0) continue;
-      const a = s.a * (s.d ? lod : 1);
-      if (a <= .01) continue;
-      const key = Math.round(a * 20);
-      let p = buckets.get(key);
-      if (!p) buckets.set(key, (p = new Path2D()));
-      strokeOutline(p, s, t, (s.d ? .3 : .4) * px);
+    // strokes, batched by alpha, and the brow hairs (close up only: thin wedges from the root);
+    // once the face is fully drawn they are built again only when the scale or the detail level changes
+    const done = draw >= 1;
+    let cache = done && F.cache && F.cache.px === px && F.cache.lod === lod ? F.cache : null;
+    if (!cache) {
+      const buckets = new Map();
+      for (const s of F.strokes) {
+        const t = prog(s.ord);
+        if (t <= 0) continue;
+        const a = s.a * (s.d ? lod : 1);
+        if (a <= .01) continue;
+        const key = Math.round(a * 20);
+        let p = buckets.get(key);
+        if (!p) buckets.set(key, (p = new Path2D()));
+        strokeOutline(p, s, t, (s.d ? .3 : .4) * px);
+      }
+      let hb = null;
+      const th = prog(1);
+      if (lod > .01 && th > 0) {
+        const n = Math.floor(F.hairs.length * th);
+        hb = [new Path2D(), new Path2D(), new Path2D()];
+        const w = Math.max(HAIR_W, .3 * px) / 2;
+        for (let k = 0; k < n; k++) {
+          const h = F.hairs[k];
+          const dx = h.x1 - h.x0;
+          const dy = h.y1 - h.y0;
+          const l = Math.hypot(dx, dy) || 1;
+          const ox = -dy / l * w;
+          const oy = dx / l * w;
+          const p = hb[h.a > .75 ? 2 : h.a > .5 ? 1 : 0];
+          p.moveTo(h.x0 + ox, h.y0 + oy);
+          p.lineTo(h.x1, h.y1);
+          p.lineTo(h.x0 - ox, h.y0 - oy);
+          p.closePath();
+        }
+      }
+      cache = { px, lod, buckets, hb };
+      if (done) F.cache = cache;
     }
-    buckets.forEach((p, key) => {
+    cache.buckets.forEach((p, key) => {
       c.fillStyle = rgba(col, Math.min(1, key / 20 * e));
       c.fill(p);
     });
-    // brow hairs, close up only: thin wedges from the root
-    const th = prog(1);
-    if (lod > .01 && th > 0) {
-      const n = Math.floor(F.hairs.length * th);
-      const hb = [new Path2D(), new Path2D(), new Path2D()];
-      const w = Math.max(HAIR_W, .3 * px) / 2;
-      for (let k = 0; k < n; k++) {
-        const h = F.hairs[k];
-        const dx = h.x1 - h.x0;
-        const dy = h.y1 - h.y0;
-        const l = Math.hypot(dx, dy) || 1;
-        const ox = -dy / l * w;
-        const oy = dx / l * w;
-        const p = hb[h.a > .75 ? 2 : h.a > .5 ? 1 : 0];
-        p.moveTo(h.x0 + ox, h.y0 + oy);
-        p.lineTo(h.x1, h.y1);
-        p.lineTo(h.x0 - ox, h.y0 - oy);
-        p.closePath();
-      }
-      hb.forEach((p, k) => {
+    if (cache.hb) {
+      cache.hb.forEach((p, k) => {
         c.fillStyle = rgba(col, [.5, .7, .9][k] * lod * e);
         c.fill(p);
       });
@@ -581,7 +614,7 @@
     }
 
     // the lens: inside it, the photograph
-    if (lens.fig === i && lens.a > .01 && f.photo.naturalWidth) {
+    if (lens.fig === i && lens.a > .01 && f.photo && f.photo.naturalWidth) {
       const [wx, wy] = cam.toW(lens.x, lens.y);
       c.save();
       c.beginPath();
@@ -715,6 +748,14 @@
   /* ------------------------------------------------------------ pointer lens (mouse only) */
 
   if (finePointer) {
+    const loadPhotos = () => DATA.forEach((d, i) => {
+      const im = new Image();
+      im.decoding = 'async';
+      im.onload = mark;
+      im.src = `assets/team/photo-${i + 1}${SMALL ? '-s' : ''}.webp?v=3`;
+      figs[i].photo = im;
+    });
+    stage.addEventListener('pointermove', loadPhotos, { once: true });
     stage.addEventListener('pointermove', e => {
       const r = stage.getBoundingClientRect();
       ptr.x = e.clientX - r.left;

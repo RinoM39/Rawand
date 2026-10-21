@@ -30,4 +30,26 @@
   window.RAWAND_MEDIA = function (u) {
     return base !== FN && typeof u === 'string' && u.indexOf(STORE + '/') === 0 ? u.slice(STORE.length) : u;
   };
+  // A stored photo at about the width it is shown: on the live site Vercel resizes it and sends it as
+  // AVIF / WebP (vercel.json "images"; widths 384 · 640 · 960 · 1280 · 1920). Elsewhere: the original.
+  var Q = 80;
+  var resizable = function (u) { return base !== FN && typeof u === 'string' && u.indexOf(STORE + '/') === 0; };
+  window.RAWAND_PHOTO_URL = function (u, w) {
+    return resizable(u) ? '/_vercel/image?url=' + encodeURIComponent(u) + '&w=' + w + '&q=' + Q : window.RAWAND_MEDIA(u);
+  };
+  // fill an <img>: a srcset of those widths (the browser picks one for its size and screen), and the
+  // original photo if the resized one ever fails to load
+  window.RAWAND_PHOTO = function (img, u, widths, sizes) {
+    if (!resizable(u)) { img.src = window.RAWAND_MEDIA(u); return; }
+    img.addEventListener('error', function back() {
+      img.removeEventListener('error', back);
+      img.removeAttribute('srcset');
+      img.src = window.RAWAND_MEDIA(u);
+    });
+    if (widths.length > 1) {
+      img.sizes = sizes || '100vw';
+      img.srcset = widths.map(function (w) { return window.RAWAND_PHOTO_URL(u, w) + ' ' + w + 'w'; }).join(', ');
+    }
+    img.src = window.RAWAND_PHOTO_URL(u, widths[widths.length - 1]);
+  };
 })();
