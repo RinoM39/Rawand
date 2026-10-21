@@ -1,6 +1,6 @@
 /* =====================================================================
    RAWAND — Contact page (تواصل معنا) · sheet A-06
-   - a survey drawing of the studio's point in Riyadh (pen strokes, drafted on scroll)
+   - a survey drawing of the studio's point in Damascus (pen strokes, drafted on scroll)
    - the project brief: three steps; each finished step inks one of the logo's three R lines,
      sending grows the leaf and stamps the sheet. Sending opens WhatsApp (data-whatsapp) or the
      visitor's mail app (data-email) with the brief written out — there is no server.
@@ -44,7 +44,7 @@
     };
   }
 
-  // A tilted street grid (like Riyadh's), a main road, a ring-road curve, range rings around the studio.
+  // A tilted street grid, a main road, a ring-road curve, range rings around the studio.
   function survey(svg) {
     const C = [176, 100];
     const defs = el('defs', {}, svg);

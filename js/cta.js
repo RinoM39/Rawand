@@ -32,7 +32,7 @@
   const UNIT = 250;             // terrain wavelength scale, CSS px
   const L0 = -3;                // contour levels: L0 + k * STEP
   const STEP = .17;
-  const ORIGIN = { lat: 24.7136, lng: 46.6753, el: 612 };   // Riyadh
+  const ORIGIN = { lat: 33.5138, lng: 36.2765, el: 690 };   // Damascus
 
   const view = { w: 1, h: 1, dpr: 1, cols: 0, rows: 0, vals: null };
   const home = { x: 0, y: 0 };                 // the pin's resting centre (frame px)

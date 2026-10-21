@@ -33,8 +33,8 @@
 
   const DICT = {
     // ---- shared: nav, footer, titles
-    'روند | RAWAND — Architecture & Planning': 'RAWAND — Architecture & Planning | Riyadh',
-    'روند — استوديو للاستشارات الهندسية والتصميم والتنفيذ في الرياض. تصاميم تنسجم فيها الوظيفة والجمال والاستدامة.': 'RAWAND — engineering consultancy, design and construction studio in Riyadh. Designs where function, beauty and sustainability work as one.',
+    'روند | RAWAND — Architecture & Planning': 'RAWAND — Architecture & Planning | Damascus',
+    'روند — استوديو للاستشارات الهندسية والتصميم والتنفيذ في دمشق. تصاميم تنسجم فيها الوظيفة والجمال والاستدامة.': 'RAWAND — engineering consultancy, design and construction studio in Damascus. Designs where function, beauty and sustainability work as one.',
     'روند — الصفحة الرئيسية': 'RAWAND — Home',
     'القائمة الرئيسية': 'Main menu',
     'القائمة': 'Menu',
@@ -56,9 +56,8 @@
     'الاستشارات الهندسية': 'Engineering consulting',
     'التصميم المعماري والداخلي': 'Architectural and interior design',
     'التنفيذ والإشراف': 'Construction and supervision',
-    'الرياض، المملكة العربية السعودية': 'Riyadh, Saudi Arabia',
     'دمشق، سوريا': 'Damascus, Syria',
-    '© ٢٠٢٦ روند للاستشارات الهندسية. صُمّم في الرياض.': '© 2026 RAWAND Engineering Consultants. Designed in Riyadh.',
+    '© ٢٠٢٦ روند للاستشارات الهندسية. صُمّم في دمشق.': '© 2026 RAWAND Engineering Consultants. Designed in Damascus.',
     'إلى أعلى الصفحة': 'Back to top',
 
     // ---- home: hero
@@ -129,9 +128,9 @@
     'رواق من الأقواس يظلّل الساحة، وملقف هواء يستعيد التبريد الطبيعي، في مبنى يجمع أهل الحي.': 'An arcade of arches shades the square and a wind tower brings back natural cooling, in a building that brings the neighbourhood together.',
     'مخطط حي الريحان': 'Al-Rayhan Master Plan',
     'مخطط لحي متكامل يتوسطه محور أخضر، بشوارع تمنح الأولوية للمشاة والظل.': 'A master plan for a complete neighbourhood around a green spine, with streets that give priority to walking and to shade.',
-    'الرياض — حي الياسمين': 'Riyadh — Al-Yasmin',
-    'الرياض — حي العليا': 'Riyadh — Al-Olaya',
-    'الرياض — حي النرجس': 'Riyadh — Al-Narjis',
+    'دمشق — المزة': 'Damascus — Al-Mazzeh',
+    'دمشق — أبو رمانة': 'Damascus — Abu Rummaneh',
+    'دمشق — كفرسوسة': 'Damascus — Kafr Sousa',
     'القصيم — بريدة': 'Qassim — Buraydah',
     'السنة': 'Year',
     'المساحة': 'Area',
@@ -182,7 +181,7 @@
 
     // ---- contact
     'تواصل معنا | روند RAWAND — Architecture & Planning': 'Contact | RAWAND — Architecture & Planning',
-    'تواصل مع روند للاستشارات الهندسية في الرياض: أرسل موجز مشروعك، ولنبدأ من الخط الأول.': 'Get in touch with RAWAND engineering consultants in Riyadh: send us your project brief, and let’s start from the first line.',
+    'تواصل مع روند للاستشارات الهندسية في دمشق: أرسل موجز مشروعك، ولنبدأ من الخط الأول.': 'Get in touch with RAWAND engineering consultants in Damascus: send us your project brief, and let’s start from the first line.',
     'كل مشروع يبدأ': 'Every project starts',
     'بخطٍّ أول.': 'with a first line.',
     'احكِ لنا عن فكرتك، ولو كانت مجرد خاطرة على ورقة. نقرأ كل موجز بعناية، ونعود إليك لنرتّب جلسة استشارة أولى.': 'Tell us about your idea, even if it is just a sketch on paper. We read every brief carefully and get back to you to arrange a first consultation.',
@@ -201,7 +200,7 @@
     'الخدمة المطلوبة': 'Service needed',
     'استشارات': 'Consulting',
     'المدينة': 'City',
-    'الرياض': 'Riyadh',
+    'دمشق': 'Damascus',
     'المساحة التقريبية': 'Approximate area',
     'م²': 'm²',
     'فكرتك': 'Your idea',
@@ -214,7 +213,7 @@
 
     // ---- project page
     'مشاريعنا | روند RAWAND — Architecture & Planning': 'Projects | RAWAND — Architecture & Planning',
-    'مشروع من أعمال روند للاستشارات الهندسية في الرياض — تصميم وتنفيذ.': 'A project by RAWAND engineering consultants in Riyadh — design and build.',
+    'مشروع من أعمال روند للاستشارات الهندسية في دمشق — تصميم وتنفيذ.': 'A project by RAWAND engineering consultants in Damascus — design and build.',
     'مسودّة — هذه المعاينة تظهر لك لأنك مسجّل الدخول، ولا يراها الزوّار.': 'Draft — you see this preview because you are signed in; visitors don’t.',
     'عرض الصورة بالحجم الكامل': 'View the photo full size',
     'عن المشروع': 'About the project',

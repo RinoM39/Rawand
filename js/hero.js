@@ -316,11 +316,21 @@
     const toggle = $('#navToggle');
     const close = () => { nav.classList.remove('is-open'); toggle.setAttribute('aria-expanded', 'false'); };
     toggle.addEventListener('click', () => toggle.setAttribute('aria-expanded', String(nav.classList.toggle('is-open'))));
+    // a link to a place on this same page: "#about", or with the page's own name ("index.html#about")
+    const hereHash = a => {
+      if (!a) return '';
+      const raw = a.getAttribute('href') || '';
+      if (raw.charAt(0) === '#') return raw.length > 1 ? raw : '';
+      const u = new URL(a.href, location.href);
+      const bare = p => p.replace(/index\.html$/, '');
+      return u.origin === location.origin && bare(u.pathname) === bare(location.pathname) && u.search === location.search && u.hash.length > 1 ? u.hash : '';
+    };
     document.addEventListener('click', e => {
-      const a = e.target.closest('a[href^="#"]');
-      if (!a) return;
+      const a = e.target.closest('a[href]');
+      const hash = hereHash(a);
+      if (!hash && !(a && a.getAttribute('href') === '#')) return;
       close();
-      const target = a.getAttribute('href').length > 1 && document.querySelector(a.getAttribute('href'));
+      const target = hash && document.querySelector(hash);
       if (!target) return; // sections owned by teammates may not exist yet
       e.preventDefault();
       if (lenis) lenis.scrollTo(target, { offset: 0 });
