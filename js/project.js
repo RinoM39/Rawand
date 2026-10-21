@@ -156,16 +156,18 @@
     $('#pjCapL').textContent = `${pad2(imgs.length)} ${imgs.length === 1 ? 'Photograph' : 'Photographs'}${film ? (films.length > 1 ? ` · ${films.length} Films` : ' · Film') : ''}`;
     $('#pjCapR').textContent = [p.location.en, p.year].filter(Boolean).join(' · ');
 
-    // text: Arabic and English side by side (the short summary if there is no full text)
+    // text: in the page's language only (the short summary if there is no full text);
+    // the other language stands in only when the project has no text in this one
     const ar = (p.description.ar || p.summary.ar || '').trim();
     const en = (p.description.en || p.summary.en || '').trim();
-    if (ar) paragraphs($('#pjDescAr'), ar);
-    if (en) paragraphs($('#pjDescEn'), en);
-    $('#pjTextAr').hidden = !ar;
-    $('#pjTextEn').hidden = !en;
-    $('#pjAbout').hidden = !ar && !en;
-    $('#pjAbout').classList.toggle('is-single', !ar || !en);
-    if (EN) $('#pjTextAr').before($('#pjTextEn'));     // English reads first on the English page
+    const useEn = EN ? !!en : !ar && !!en;
+    const useAr = !useEn && !!ar;
+    if (useAr) paragraphs($('#pjDescAr'), ar);
+    if (useEn) paragraphs($('#pjDescEn'), en);
+    $('#pjTextAr').hidden = !useAr;
+    $('#pjTextEn').hidden = !useEn;
+    $('#pjAbout').hidden = !useAr && !useEn;
+    $('#pjAbout').classList.add('is-single');
 
     // films: the uploaded files play in place; a link loads its player only when asked for
     const first = $('#pjFilmFrame');
