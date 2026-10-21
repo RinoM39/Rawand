@@ -313,6 +313,7 @@
 }
 .prj-go svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; transition: transform .35s var(--ease-out); }
 /* the whole sheet opens the project page */
+.prj-sheet { cursor: pointer; }
 .prj-link { color: inherit; }
 .prj-link::after { content: ''; position: absolute; inset: 0; z-index: 2; }
 .prj-link:focus-visible { outline: none; }

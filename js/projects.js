@@ -293,6 +293,12 @@
     fig.append(photo, cap);
 
     sheet.append(info, fig);
+    // a tap or click anywhere on the sheet opens the project (the title stays the real link, for keyboards)
+    sheet.addEventListener('click', e => {
+      if (e.defaultPrevented || e.target.closest('a, button')) return;
+      if (String(window.getSelection ? window.getSelection() : '')) return;
+      location.href = link.href;
+    });
     li.append(sheet);
     return li;
   }
